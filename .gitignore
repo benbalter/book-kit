@@ -1,0 +1,14 @@
+node_modules/
+dist/
+example/dist/
+example/fonts
+tests/fixtures/neutral-book/fonts
+tests/fixtures/complex-book/fonts
+# The complex fixture keeps its generated emoji beside its own, outside dist/.
+tests/fixtures/complex-book/img/emoji-kindle/
+tests/fixtures/complex-book/img/emoji-print-*/
+*.log
+.DS_Store
+# Built by `book-kit fonts`; the kit ships only the recipe (see NOTICE.md).
+fonts/**/*.woff2
+.claude/worktrees/

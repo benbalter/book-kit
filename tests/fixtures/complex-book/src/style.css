@@ -1,0 +1,17 @@
+/* The complex fixture book's stylesheet: Tailwind, the kit theme, then book overrides.
+   A book installed from npm imports "book-kit/css/theme.css" and
+   points @source at node_modules/book-kit instead. */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "../../../../css/theme.css";
+
+/* Tailwind v4 skips node_modules and files outside the project when scanning
+   for utility classes; the kit's templates and filters emit some. */
+@source "../../../../templates";
+@source "../../../../filters";
+
+/* Hide the redundant title pandoc adds above the headingless copyright page
+   (its id is the slug of the book's title). */
+#the-complex-example > h1 {
+  display: none;
+}

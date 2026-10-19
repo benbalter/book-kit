@@ -1,0 +1,546 @@
+/* ============================================
+   COMPONENTS LAYER - Reusable Callout Patterns
+   ============================================ */
+@layer components {
+  /* Lead Paragraph - Bootstrap-style introductory text */
+  .lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--color-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* Section Opener — page-level lead styling for section introduction chapters.
+     Applies lead treatment to all direct paragraphs and lists within the section,
+     while leaving callout divs (.tldr, .common-objection, .for-managers, .for-ics,
+     .pro-tip) styled normally via their own rules. */
+  section.section-opener > p,
+  section.section-opener > ul,
+  section.section-opener > ol {
+    font-size: 1.25rem;
+    font-weight: 300;
+    line-height: 1.5;
+    color: var(--color-muted);
+    margin-bottom: 1.5rem;
+  }
+
+  /* TL;DR Summary Callout — uses body serif for readable paragraph text.
+     The label ("TL;DR:") is injected as bold by the Lua filter and
+     styled via the ::before rule (screen) or <strong> (EPUB). */
+  .tldr {
+    font-family: var(--font-body);
+    font-size: 1em;
+    font-weight: 400;
+    line-height: 1.5;
+    margin-top: 0.25rem;
+    margin-bottom: 0.25rem;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--color-summary-bg);
+    border-left: 4px solid var(--color-summary-border);
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    /* When a callout is too tall to keep on one page (avoid can't help), break
+       it cleanly: each page fragment gets its own complete border/background
+       instead of an orphaned, square-cut open edge at the page boundary. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .tldr::before {
+    content: "TL;DR: ";
+    font-variant-caps: all-small-caps;
+    font-size: inherit; /* Prevent browser synthesis from reducing size */
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: baseline;
+    letter-spacing: 0.04em;
+    font-family: var(--font-heading);
+    display: inline;
+  }
+
+  .tldr p:first-child {
+    display: inline;
+    margin: 0;
+  }
+
+  /* Key Takeaways Box */
+  .takeaways {
+    font-family: var(--font-body);
+    margin: 0.75rem 0;
+    padding: 1rem 1.25rem;
+    background-color: var(--color-takeaway-bg);
+    border-left: 3px solid var(--color-takeaway-border);
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    /* When a callout is too tall to keep on one page (avoid can't help), break
+       it cleanly: each page fragment gets its own complete border/background
+       instead of an orphaned, square-cut open edge at the page boundary. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .takeaways h3 {
+    margin-top: 0;
+    font-family: var(--font-heading);
+    font-size: 1em;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    color: var(--color-emphasis);
+  }
+
+  .takeaways ul {
+    margin-bottom: 0;
+  }
+
+  .takeaways ul li {
+    margin-bottom: 0.4rem;
+  }
+
+  /* Pro-Tip Callout */
+  .pro-tip {
+    font-family: var(--font-body);
+    margin: 0.75rem 0;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--color-tip-bg);
+    border-left: 3px solid var(--color-tip-accent);
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    /* When a callout is too tall to keep on one page (avoid can't help), break
+       it cleanly: each page fragment gets its own complete border/background
+       instead of an orphaned, square-cut open edge at the page boundary. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .pro-tip::before {
+    content: "💡 Pro-Tip: ";
+    font-variant-caps: all-small-caps;
+    font-size: inherit;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: baseline;
+    letter-spacing: 0.04em;
+    font-family: var(--font-heading);
+    display: inline;
+  }
+
+  .pro-tip p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .pro-tip p:first-child {
+    display: inline;
+    margin: 0;
+  }
+
+  .pro-tip p:last-child {
+    margin-bottom: 0;
+  }
+
+  .pro-tip p:first-child + p {
+    margin-top: 0.75rem;
+  }
+
+  /* Core callouts — the kit defaults' registry (note, tip, warning). Same
+     box as the Pro-Tip; books on a preset style their own callouts. */
+  .callout,
+  .note,
+  .tip,
+  .warning {
+    font-family: var(--font-body);
+    margin: 0.75rem 0;
+    padding: 0.875rem 1.25rem;
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .note,
+  .callout {
+    background-color: var(--color-note-bg);
+    border-left: 3px solid var(--color-note-accent);
+  }
+
+  .tip {
+    background-color: var(--color-tip-bg);
+    border-left: 3px solid var(--color-tip-accent);
+  }
+
+  .warning {
+    background-color: var(--color-warning-bg);
+    border-left: 3px solid var(--color-warning-accent);
+  }
+
+  .callout::before,
+  .note::before,
+  .tip::before,
+  .warning::before {
+    font-variant-caps: all-small-caps;
+    font-size: inherit;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: baseline;
+    letter-spacing: 0.04em;
+    font-family: var(--font-heading);
+    display: inline;
+  }
+
+  .note::before {
+    content: "Note: ";
+  }
+
+  .tip::before {
+    content: "Tip: ";
+  }
+
+  .warning::before {
+    content: "Warning: ";
+  }
+
+  /* A book's own callouts look like .note: filters/callout-classes.lua gives
+     any registry callout the theme doesn't style the .callout class and a
+     data-label. This draws that label in the web edition; the other formats
+     get it from add-div-titles.lua, and @media screen keeps it out of them. */
+  @media screen {
+    .callout::before {
+      content: attr(data-label) " ";
+    }
+  }
+
+  .callout p,
+  .note p,
+  .tip p,
+  .warning p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .callout p:first-child,
+  .note p:first-child,
+  .tip p:first-child,
+  .warning p:first-child {
+    display: inline;
+    margin: 0;
+  }
+
+  .callout p:last-child,
+  .note p:last-child,
+  .tip p:last-child,
+  .warning p:last-child {
+    margin-bottom: 0;
+  }
+
+  .callout p:first-child + p,
+  .note p:first-child + p,
+  .tip p:first-child + p,
+  .warning p:first-child + p {
+    margin-top: 0.75rem;
+  }
+
+  /* For Managers Callout */
+  .for-managers {
+    font-family: var(--font-body);
+    margin: 0.75rem 0;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--color-manager-bg);
+    border-left: 3px solid var(--color-manager-accent);
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    /* When a callout is too tall to keep on one page (avoid can't help), break
+       it cleanly: each page fragment gets its own complete border/background
+       instead of an orphaned, square-cut open edge at the page boundary. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .for-managers::before {
+    content: "👔 For managers: ";
+    font-variant-caps: all-small-caps;
+    font-size: inherit;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: baseline;
+    letter-spacing: 0.04em;
+    font-family: var(--font-heading);
+    display: inline;
+  }
+
+  .for-managers p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .for-managers p:first-child {
+    display: inline;
+    margin: 0;
+  }
+
+  .for-managers p:last-child {
+    margin-bottom: 0;
+  }
+
+  .for-managers p:first-child + p {
+    margin-top: 0.75rem;
+  }
+
+  /* For Individual Contributors Callout */
+  .for-ics {
+    font-family: var(--font-body);
+    margin: 0.75rem 0;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--color-ic-bg);
+    border-left: 3px solid var(--color-ic-accent);
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    /* When a callout is too tall to keep on one page (avoid can't help), break
+       it cleanly: each page fragment gets its own complete border/background
+       instead of an orphaned, square-cut open edge at the page boundary. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .for-ics::before {
+    content: "💻 For individual contributors: ";
+    font-variant-caps: all-small-caps;
+    font-size: inherit;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: baseline;
+    letter-spacing: 0.04em;
+    font-family: var(--font-heading);
+    display: inline;
+  }
+
+  .for-ics p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .for-ics p:first-child {
+    display: inline;
+    margin: 0;
+  }
+
+  .for-ics p:last-child {
+    margin-bottom: 0;
+  }
+
+  .for-ics p:first-child + p {
+    margin-top: 0.75rem;
+  }
+
+  /* Common Objection Callout */
+  .common-objection {
+    font-family: var(--font-body);
+    margin: 0.75rem 0;
+    padding: 0.875rem 1.25rem;
+    background-color: var(--color-objection-bg);
+    border-left: 3px solid var(--color-objection-accent);
+    border-radius: var(--radius-callout);
+    page-break-before: avoid;
+    page-break-inside: avoid;
+    /* When a callout is too tall to keep on one page (avoid can't help), break
+       it cleanly: each page fragment gets its own complete border/background
+       instead of an orphaned, square-cut open edge at the page boundary. */
+    -webkit-box-decoration-break: clone;
+    box-decoration-break: clone;
+  }
+
+  .common-objection::before {
+    content: "🤔 Common objection: ";
+    font-variant-caps: all-small-caps;
+    font-size: inherit;
+    font-weight: 700;
+    font-style: normal;
+    line-height: 1;
+    vertical-align: baseline;
+    letter-spacing: 0.04em;
+    font-family: var(--font-heading);
+    display: inline;
+  }
+
+  .common-objection p {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .common-objection p:first-child {
+    display: inline;
+    margin: 0;
+  }
+
+  .common-objection p:nth-child(2) {
+    display: block;
+    margin-top: 0.75rem;
+  }
+
+  .common-objection p:last-child {
+    margin-bottom: 0;
+  }
+
+  /* Title Block Header */
+  .title {
+    text-align: center;
+  }
+
+  #title-block-header {
+    margin-top: 3rem;
+  }
+
+  /* Footnotes Section */
+  .footnotes {
+    font-size: 0.85em;
+    margin-top: var(--spacing-section);
+    padding-top: var(--spacing-callout);
+    border-top: 2px solid var(--color-emphasis);
+    page-break-inside: avoid;
+  }
+
+  .footnotes::before {
+    content: "Notes";
+    display: block;
+    margin-bottom: 0.75rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    font-size: 1.1em;
+    letter-spacing: normal;
+  }
+
+  .footnotes ol {
+    font-family: var(--font-heading);
+    font-variant-numeric: lining-nums tabular-nums;
+    padding-left: 2em;
+  }
+
+  .footnotes ol li {
+    margin-bottom: 0.5rem;
+    padding-left: 0.25em;
+  }
+
+  .footnotes ol li p {
+    margin-bottom: 0.25rem;
+    line-height: 1.4;
+  }
+
+  /* Blockquotes — elegant left-border with refined typography */
+  blockquote {
+    border-left: 3px solid var(--color-muted);
+    padding-left: 1.25rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.25rem;
+    margin: 1.5rem 0 1.5rem 0.5rem;
+    font-style: italic;
+    font-size: 0.97em;
+    page-break-inside: avoid;
+  }
+
+  blockquote p {
+    margin-bottom: 0;
+  }
+
+  /* Images */
+  img {
+    max-width: 100%;
+    height: auto;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    page-break-inside: avoid;
+  }
+
+  /* Tables — booktabs academic style */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9em;
+    font-family: var(--font-heading);
+    page-break-inside: avoid;
+    margin: 1.5em 0;
+    border-top: 2px solid var(--color-emphasis);
+    border-bottom: 2px solid var(--color-emphasis);
+  }
+
+  table th,
+  table td {
+    padding: 0.5rem 0.75rem;
+    border: none;
+    border-bottom: 1px solid var(--color-border);
+    vertical-align: top;
+    text-align: left;
+  }
+
+  table th {
+    background-color: transparent;
+    font-weight: 600;
+    font-size: 0.9em;
+    letter-spacing: 0.02em;
+    border-bottom: 1px solid var(--color-emphasis);
+  }
+
+  table tbody tr:last-child td {
+    border-bottom: none;
+  }
+
+  /* Subtle zebra striping for long tables — helps track across rows */
+  table tbody tr:nth-child(even) {
+    background-color: #f8f8f8;
+  }
+
+  /* Figures and Captions */
+  figure {
+    margin: var(--spacing-callout) 0;
+    text-align: center;
+  }
+
+  figcaption {
+    font-size: 0.9em;
+    color: var(--color-muted);
+    margin-top: 0.5rem;
+    text-align: center;
+    font-style: italic;
+  }
+
+  /* Copyright Page */
+  #copyright-page {
+    display: flex;
+    align-items: flex-end;
+    font-size: 0.825em;
+    line-height: 1.5;
+    page-break-before: left;
+    page-break-after: always;
+  }
+
+  /* Dedication — refined centered treatment */
+  .dedication {
+    text-align: center;
+    font-style: italic;
+    margin-top: 3in;
+    font-size: 1.05em;
+    line-height: 1.65;
+    color: var(--color-emphasis);
+  }
+
+  /* Footnote Reference Styling */
+  .footnote-ref {
+    font-size: 0.85em;
+    vertical-align: baseline;
+    position: relative;
+    top: -0.4em;
+    color: #000;
+  }
+
+}

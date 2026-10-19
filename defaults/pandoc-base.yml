@@ -1,0 +1,19 @@
+# Shared pandoc options for the HTML and PDF builds. Identity metadata (title,
+# author, ISBN, ...) is NOT here: the build generates it from book.config.yml
+# into dist/.book-kit/pandoc-<format>.yml, passed after this file so it wins.
+from: markdown+yaml_metadata_block+smart+auto_identifiers+footnotes+strikeout+implicit_figures+emoji+fenced_divs+inline_code_attributes+raw_attribute-citations
+table-of-contents: true
+toc-depth: 2
+standalone: true
+pdf-engine: weasyprint
+metadata:
+  documentclass: book
+  css: style.css
+  document-css: false
+top-level-division: chapter
+embed-resources: true
+pdf-engine-opts:
+  - --base-url=./dist/
+  - --pdf-version=1.4
+  - --dpi=300
+  - --optimize-images

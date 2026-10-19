@@ -1,0 +1,20 @@
+# The kit's example book: a CI fixture that exercises every format and filter.
+# Copy it to start a new book (see the Quick start in README.md).
+extends: business-nonfiction
+metadata:
+  title: The Example Book
+  subtitle: A small book that exercises every book-kit feature
+  description: A short sample book used to test the book-kit build pipeline.
+  author: [A. N. Author]
+  publisher: Example Press
+  rights: © 2026 Example Press. Licensed for testing.
+  uuid: 3f0c2a7e-5b1d-4e8a-9c4f-2d6e8b1a7c90
+  pub_date: "2026-01-01"
+  subjects: [Publishing, Software Development]
+print:
+  page_count: null
+validators:
+  severity:
+    # A three-chapter fixture is short by design.
+    chapter-lengths: "off"
+    min-opener-length: "off"

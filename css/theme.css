@@ -1,0 +1,38 @@
+/* book-kit theme - Tailwind CSS v4 stylesheet
+   (imported by a book's src/style.css after @import "tailwindcss")
+   Custom styles for multi-format book output (HTML, EPUB, PDF)
+   Following Tailwind v4 CSS-first configuration best practices */
+
+/*
+   CSS Pipeline:
+   src/style.css (this file)
+       → PostCSS (npm run build:css) → dist/style.css
+           ├── HTML: used directly with full CSS feature support
+           ├── PDF:  WeasyPrint renders @media print rules (CSS Paged Media)
+           └── EPUB: commands/strip-page-rules.js → dist/style-epub.css
+                     (strips @page, @layer, var(), calc(), oklch() etc.)
+                     └── Kindle: commands/kindle-fonts.js replaces variable fonts
+                                 with static weight-specific font declarations
+
+   Format-specific notes:
+   • @media print    — PDF/WeasyPrint: absolute pt sizes, float:footnote, @page rules
+   • @media not screen — EPUB overrides: em headings, inherit body typography, hyphens
+   • @media (prefers-color-scheme: dark) — Apple Books, Kobo dark mode adaptation
+   • WeasyPrint ignores variable font-weight ranges — explicit @font-face needed
+   • EPUB strips ::before labels — add-div-titles.lua injects text nodes instead
+*/
+
+/* The theme is split by section into css/theme/, imported here in cascade
+   order. A book can import this file for all of it, or the parts it wants
+   (keeping this order), e.g. everything but 09-back-matter.css. */
+@import "./theme/01-tokens.css";
+@import "./theme/02-fonts.css";
+@import "./theme/03-prose.css";
+@import "./theme/04-base.css";
+@import "./theme/05-components.css";
+@import "./theme/06-utilities.css";
+@import "./theme/07-ereader.css";
+@import "./theme/08-epub.css";
+@import "./theme/09-back-matter.css";
+@import "./theme/10-dark.css";
+@import "./theme/11-print.css";

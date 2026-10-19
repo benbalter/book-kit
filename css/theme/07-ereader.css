@@ -1,0 +1,245 @@
+/* ============================================
+   EPUB/E-READER ENHANCEMENTS
+   Styles optimized for EPUB readers like Kindle,
+   Apple Books, and other e-readers. These don't
+   use media queries since EPUB support is limited.
+   ============================================ */
+
+/* EPUB base font-size — use 1em (industry default) instead of Tailwind
+   Typography's 1rem. Kindle Publishing Guidelines, the EPUB 3 spec,
+   and Apple Books all recommend 1em/100% so the reader controls sizing.
+   em has wider EPUB-reader support than rem (especially older Kindle). */
+.prose {
+  font-size: 1em;
+}
+
+/* Page breaks on section wrappers so EPUB anchor links land on the correct page.
+   Pandoc places the anchor ID on the <section> wrapper, not the <h1>/<h2>.
+   If page-break-before is on the heading, EPUB readers navigate to the
+   section (before the page break) and show the previous page's content. */
+.level1,
+.level2 {
+  page-break-before: always;
+  break-before: page;
+}
+
+/* In print output, let headings control chapter breaks to avoid redundant
+   breaks on both the section and the heading (which can cause blank pages). */
+@media print {
+  .level1,
+  .level2 {
+    page-break-before: auto !important;
+    break-before: auto !important;
+  }
+}
+
+/* Enhanced chapter titles for EPUB navigation
+   Note: Pandoc outputs epub:type="bodymatter" on <body>, not
+   epub:type="chapter" on sections, so we target heading levels
+   and the .level1/.level2 classes pandoc generates instead. */
+.level1 > h1,
+.level2 > h2,
+h1.chapter-title,
+h2.chapter-title {
+  margin-top: 2rem;
+  margin-bottom: 1.25rem;
+  padding-bottom: 0.5rem;
+  page-break-after: avoid;
+}
+
+/* Copyright page — EPUB-compatible layout.
+   Flexbox and viewport units (100vh) are unsupported in most
+   EPUB readers (Kindle, Kobo, older Apple Books). The EPUB-only
+   overrides are in the @media not screen block below (line ~1180). */
+
+/* Fix copyright section visibility in EPUB.
+   Pandoc propagates .invisible from the H2 to the wrapping
+   <section>, hiding ALL content via inherited visibility:hidden.
+   Reset visibility on the section so paragraphs show, then
+   collapse only the heading to zero height. */
+#copyright-page .invisible {
+  visibility: visible;
+}
+
+#copyright-page .invisible > h2 {
+  /* Screen-reader only: keep in accessibility tree (heading-order validity)
+     but hide visually. Do not use visibility:hidden or display:none —
+     those remove the heading from the a11y tree and cause axe
+     heading-order violations for subsequent H3s. */
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* First paragraph after chapter heading — block style, no indent */
+h1 + p,
+h2 + p,
+h3 + p {
+  text-indent: 0;
+}
+
+/* Paragraph hyphenation for better text justification on e-readers */
+p {
+  hyphens: auto;
+  -webkit-hyphens: auto;
+}
+
+/* Widows and orphans — prevent single straggler lines at page boundaries.
+   E-reader screens are small, so use 2 (not 3) to avoid excessive
+   page shuffling. Apple Books respects these; Kindle partially supports. */
+p,
+li,
+blockquote,
+dd {
+  orphans: 2;
+  widows: 2;
+}
+
+/* Headings: keep with following content and prevent stranding.
+   h1-h3 already have orphans/widows: 3 from the base layer;
+   h4-h6 only had page-break-after: avoid. */
+h4,
+h5,
+h6 {
+  orphans: 2;
+  widows: 2;
+}
+
+/* Callouts: prefer keeping whole, but if a long callout must break,
+   don't strand a single line on either side of the page boundary. */
+.tldr,
+.callout,
+.note,
+.tip,
+.warning,
+.pro-tip,
+.for-managers,
+.for-ics,
+.common-objection,
+.takeaways {
+  orphans: 3;
+  widows: 3;
+}
+
+/* Small caps for EPUB — no font-size compensation needed.
+   Source Serif 4 has true OpenType small-cap glyphs (smcp/c2sc), so
+   all-small-caps renders at the correct x-height without adjustment.
+   Previous 1.15em compensation was for Noto fonts whose smcp silently
+   failed, causing e-readers to synthesize undersized small caps. */
+
+/* Remove Tailwind Typography backtick wrapping around inline code.
+   Tailwind adds visible ` characters via ::before/::after — a blog
+   convention that doesn't belong in a published book. Code is already
+   visually distinguished by font family (Source Code Pro), weight, and
+   size. Must match Tailwind specificity (.prose code:not(.not-prose)). */
+.prose code:not(.not-prose)::before,
+.prose code:not(.not-prose)::after {
+  content: none;
+}
+
+/* Override Tailwind Typography's bold inline code.
+   The plugin applies font-weight: 600 to code elements — designed
+   for system fonts where bold distinguishes code from body text.
+   Source Code Pro is already visually distinct; bold is redundant. */
+.prose code:not(.not-prose) {
+  font-weight: normal;
+}
+
+/* Enhance chapter title visual hierarchy for EPUB.
+   PDF has a dramatic 1.75" title sink; EPUB can't replicate exact
+   measurements but benefits from more generous spacing to mark chapter
+   openings clearly on small screens. No border — matches PDF's clean look. */
+.level2 > h2 {
+  margin-top: 3em;
+  margin-bottom: 1.5em;
+}
+
+/* Section intro headings (h1, used for part openers) get extra presence.
+   PDF uses a thin decorative rule via ::after; EPUB approximates with
+   border-bottom since ::after isn't reliable on e-readers. */
+.level1 > h1 {
+  margin-top: 3em;
+  padding-bottom: 0.75em;
+  border-bottom: 1px solid #000;
+  margin-bottom: 1.5em;
+}
+
+/* Link styling differs by format:
+   • Screen: brand blue, no underline (color provides distinction)
+   • EPUB/e-ink: underline required (blue renders as gray on e-ink)
+   • Print: black, no underline (context and footnotes provide distinction) */
+
+/* Links: ensure distinction on e-ink screens.
+   E-ink renders blue as gray, making underline-only links hard to spot.
+   Use underline + slightly heavier weight for reliable visibility.
+   Scoped to .prose to avoid styling TOC/nav links. */
+.prose a:not(.not-prose) {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.15em;
+}
+
+/* Blockquotes: more refined styling for book-quality appearance.
+   Increase left border width and add left padding for visual weight. */
+.prose blockquote:not(.not-prose) {
+  border-left-width: 3px;
+  border-left-color: #999;
+  padding-left: 1.25em;
+  color: #444;
+}
+
+/* Accessible contrast for muted text in EPUB.
+   --color-muted (#6c757d) is only ~4.6:1 on white — borderline WCAG AA
+   and unreliable on e-ink/sepia backgrounds. #555 provides ~7.5:1 (AAA).
+   Also bump lead font-weight from 300 (light) to 400 (normal) since
+   thin strokes further reduce perceived contrast on e-readers.
+   Must match Tailwind Typography specificity (.prose X:not(.not-prose)). */
+.lead,
+.prose .lead:not(.not-prose),
+section.section-opener > p,
+section.section-opener > ul,
+section.section-opener > ol {
+  color: #555;
+  font-weight: 400;
+}
+
+/* The lead treatment is for a section's opening pages only. Where a
+   section's chapters sit directly in its <section> (a closing section, say),
+   their body paragraphs follow an h2 and would otherwise all render as large, gray
+   lead text. Unlayered and one type selector more specific than every
+   section-opener lead rule (base, Kindle, and dark mode), so it wins in each. */
+section.section-opener > h2 ~ p,
+section.section-opener > h2 ~ ul,
+section.section-opener > h2 ~ ol {
+  font-size: inherit;
+  font-weight: inherit;
+  line-height: inherit;
+  color: inherit;
+}
+
+/* Weight 300 (light) renders poorly on e-ink — thin strokes disappear.
+   Override subtitle to 400, matching the .lead fix above. */
+p.subtitle {
+  font-weight: 400;
+}
+
+/* Ensure semibold (600) for bold text in EPUB.
+   The @layer base rule (strong, b { font-weight: 600 }) doesn't survive
+   the EPUB strip process due to selector deduplication with Tailwind's
+   preflight (b, strong { font-weight: bolder }). This unlayered rule
+   takes precedence and ensures consistent bold weight. */
+strong,
+b {
+  font-weight: 600;
+}
+
+figcaption,
+.prose figcaption:not(.not-prose) {
+  color: #555;
+}

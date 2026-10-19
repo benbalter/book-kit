@@ -1,0 +1,14 @@
+{
+  "name": "book-kit",
+  "owner": {
+    "name": "Ben Balter"
+  },
+  "description": "Claude Code plugins for books built with book-kit.",
+  "plugins": [
+    {
+      "name": "book-kit",
+      "source": "./claude-plugin",
+      "description": "Writing and editor agents for books built with book-kit, plus a hook that validates each chapter after Claude edits it."
+    }
+  ]
+}

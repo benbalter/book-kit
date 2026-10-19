@@ -1,0 +1,187 @@
+# book-kit defaults. Every key here can be overridden in a book's
+# `book.config.yml`. Maps are deep-merged; lists replace the default wholesale.
+#
+# This file doubles as the config reference: each key is documented where it's
+# defined, so there's one place to look.
+
+# Where the book's files live, relative to the directory holding book.config.yml.
+paths:
+  src: src
+  dist: dist
+  index: index.yml          # pandoc defaults file listing `input-files` in reading order
+  css: src/style.css        # Tailwind entry point (imports the kit theme)
+  cover: img/cover.jpeg
+  img: img
+  fonts: fonts             # if missing, the build symlinks the kit's fonts here (gitignore it)
+  version: VERSION          # plain-text semver, stamped into the build as "<version> (<sha>)"
+  epub_metadata: epub.xml   # Dublin Core supplement for the EPUB OPF; generated from metadata if absent
+
+# Output files are dist/<basename>.epub, <basename>.pdf, <basename>-kindle.epub, etc.
+output:
+  basename: book
+  # The PDF/X-1a file is dist/<basename><pdfx_suffix>.pdf. A book that already
+  # ships it under another name (e.g. -printer) can keep that name.
+  pdfx_suffix: -pdfx
+
+# Bibliographic metadata. Passed to pandoc as metadata, so it lands in the
+# EPUB OPF, the HTML <head>, and the PDF info dictionary.
+metadata:
+  title: Untitled Book
+  subtitle: ""
+  description: ""
+  author: []
+  lang: en-US
+  rights: ""
+  publisher: ""
+  isbn_paperback: ""
+  isbn_ebook: ""
+  pub_date: ""              # YYYY-MM-DD
+  copyright_year: ""
+  uuid: ""                  # stable EPUB identifier; mint once, never change
+  bisac: []                 # BISAC codes, e.g. REF000000
+  keywords: []              # retailer keyword phrases
+  subjects: []              # <dc:subject> lines for the generated epub.xml
+
+# Reserved: no kit command reads this yet. Public site for the book, if any,
+# for books' own tooling. Leave empty if there isn't one.
+site_url: ""
+
+# EPUB accessibility metadata (schema.org properties in the OPF). The kit's
+# markup is built for WCAG 2.1 AA (semantic structure, DPUB-ARIA roles, alt
+# text, reflowable text), but a conformance claim is the publisher's to make:
+# conforms_to, summary, and certified_by are empty until the book sets them,
+# after checking its own content (e.g. with Ace by DAISY).
+accessibility:
+  access_modes: [textual]
+  access_mode_sufficient: [textual]
+  features: [alternativeText, readingOrder, structuralNavigation, tableOfContents, displayTransformability, ARIA]
+  hazards: [none]
+  summary: ""               # e.g. "This publication conforms to WCAG 2.1 Level AA. ..."
+  conforms_to: ""           # e.g. "EPUB Accessibility 1.1 - WCAG 2.1 Level AA"
+  certified_by: ""          # who makes the claim; defaults to metadata.publisher once conforms_to is set
+  conformance_url: ""       # public accessibility statement, e.g. https://example.com/accessibility/
+
+# Extra pandoc metadata merged into every format, for anything the keys above
+# don't cover (e.g. belongs-to-collection).
+pandoc_metadata: {}
+
+# Print (PDF) settings.
+print:
+  trim: [6, 9]              # inches; must match the @page size in the theme
+  page_count: null          # set to lock the PDF page count in CI (null = no lock)
+  pdfx_title: ""            # PDF/X-1a info-dictionary title; defaults to metadata.title
+
+# Callout registry, in priority order. Each entry is a fenced div class:
+#
+#   ::: {.pro-tip custom-style="pro-tip"}
+#   ...
+#   :::
+#
+#   class        fenced-div class name
+#   label        visible prefix the build injects ("Pro-Tip:"); omit for none
+#   aria         aria-label for the div (role="doc-notice")
+#   emoji        emoji shown before the label in EPUB
+#   emoji_cp     Twemoji codepoint for the PNG used in Kindle/PDF (e-ink and
+#                WeasyPrint can't render color emoji text)
+#   emoji_alt    alt text for that PNG
+#
+# The labels are injected by the build; writers never type them. Validators
+# flag a callout whose body starts with its own label. The kit theme styles all
+# six built-in classes; a book adding its own class styles it in its CSS.
+callouts:
+  - class: tldr
+    label: "TL;DR:"
+    aria: Summary
+  - class: pro-tip
+    label: "Pro-Tip:"
+    aria: Pro tip
+    emoji: "💡"
+    emoji_cp: 1f4a1
+    emoji_alt: light bulb
+  - class: for-managers
+    label: "For managers:"
+    aria: Guidance for managers
+    emoji: "👔"
+    emoji_cp: 1f454
+    emoji_alt: necktie
+  - class: for-ics
+    label: "For individual contributors:"
+    aria: Guidance for individual contributors
+    emoji: "💻"
+    emoji_cp: 1f4bb
+    emoji_alt: laptop
+  - class: common-objection
+    label: "Common objection:"
+    aria: Common objection
+    emoji: "🤔"
+    emoji_cp: 1f914
+    emoji_alt: thinking
+  - class: takeaways
+    aria: Key takeaways
+
+# Emoji images. Color emoji don't render on Kindle e-ink and crash WeasyPrint
+# in CSS content:, so those builds swap in Twemoji PNGs (CC-BY 4.0). The kit's
+# composite scripts derive per-format variants from source_dir.
+emoji:
+  source_dir: ""                                # empty = the kit's emoji/ directory
+  kindle_dir: dist/.book-kit/emoji-kindle/      # book-relative (EPUB embeds it)
+  pdf_callout_dir: .book-kit/emoji-print-callout/  # relative to dist/ (the PDF base URL)
+  pdf_body_dir: .book-kit/emoji-print-body/        # relative to dist/
+
+# Chapter structure conventions used by the validators, dashboard, and audits.
+structure:
+  # Pages that aren't narrative chapters (matched by file slug; a trailing *
+  # matches a prefix). The prose validators and audits skip them, as they do
+  # takeaways collections and *-scratch.md drafts.
+  structural_slugs: [copyright, dedication, acknowledgements, about-the-author, back-cover, disclaimer]
+  # Chapters whose filename ends with this suffix collect the section's TL;DRs
+  # (generated by `just key-takeaways`).
+  takeaways_suffix: -key-takeaways
+  # index.yml sections (comment names) that don't get a takeaways chapter.
+  takeaways_skip_sections: [Front matter, Appendix, Conclusion, Back cover]
+  # Every chapter must open with this callout class (null to disable).
+  required_callout: tldr
+  # Heading id where Kindle's "Start Reading" lands. Empty = the first file in
+  # index.yml that isn't a structural page.
+  start_reading: ""
+
+# Reserved: no kit command reads these yet (the kit ships no LLM review tools;
+# the Claude Code agents read the book's CLAUDE.md instead). Kept so books
+# that set them, or their own tooling, keep working. Neutral by default.
+llm:
+  title: ""                 # defaults to metadata.title
+  voice: the author's voice
+  audience: ""
+
+# Linting and validation.
+# Paths in lint and validators are relative to the book root, as in index.yml
+# (e.g. src/intro.md).
+lint:
+  acronyms: []              # extra acronyms that must be written [ACRONYM]{.smallcaps}
+  universal_acronyms: []    # extra acronyms readers know without expansion
+  exclude: []               # files the per-chapter checks skip (index.yml, TODO, required callout)
+  generated: []             # machine-generated pages the lexical validators skip
+  dictionary: dictionary.txt  # reserved: no kit command reads this yet
+
+validators:
+  # error | warn | off, keyed by validator name (`book-kit validate --list`).
+  severity:
+    # A link to a missing anchor fails EPUBCheck (RSC-012); catch it here
+    # first, with the file and line.
+    cross-references: error
+  # Intentional exceptions, keyed by validator name. Entries are "file:line"
+  # (sentence-starters, paragraph-length, hypothetical-hooks) or file paths
+  # (callout-balance).
+  allow: {}
+  # Book-specific validators: ES modules exporting { name, run(ctx) }.
+  plugins: []
+
+# Hooks for book-specific build steps.
+build:
+  extra_filters:            # extra Lua filters (book-relative paths), per format
+    epub: []
+    kindle: []
+    html: []
+    pdf: []
+  print_exclude: []         # src-relative files dropped from PDF/Kindle builds
+  print_inject: {}          # index.yml marker comment -> src-relative file, PDF only

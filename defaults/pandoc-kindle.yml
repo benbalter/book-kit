@@ -1,0 +1,6 @@
+# Kindle overrides, passed after pandoc-epub.yml. Kindle ignores variable
+# WOFF2, so it gets static fonts and the Kindle stylesheet.
+metadata:
+  css: style-kindle.css
+epub-fonts:
+- "./fonts/kindle/*.woff2"

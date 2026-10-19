@@ -1,0 +1,3 @@
+# The complex fixture book's justfile: everything comes from the kit.
+set allow-duplicate-recipes
+import '../../../just/book-kit.just'

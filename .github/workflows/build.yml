@@ -1,0 +1,89 @@
+# Reusable book build. A book calls it from its own workflow:
+#
+#   jobs:
+#     build:
+#       uses: benbalter/book-kit/.github/workflows/build.yml@v0.6
+#       permissions:
+#         contents: read
+#
+# Runs the chapter validators and linters (`just check-all`), builds every
+# format with `just all` (the book's justfile, which imports the kit's
+# recipes), runs the book's `npm test` if it has one, validates the EPUBs
+# with two pinned EPUBCheck versions and the PDF/X with Ghostscript, and
+# uploads dist/ as an artifact.
+name: Build book
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory holding the book (book.config.yml, justfile)
+        type: string
+        default: .
+      recipe:
+        description: just recipe to run
+        type: string
+        default: all
+      artifact-name:
+        description: Name of the uploaded build artifact
+        type: string
+        default: book
+      checks:
+        description: Run `just check-all` (validators, Markdown lint, prose lint) before building
+        type: boolean
+        default: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: benbalter/book-kit/actions/setup-book-kit@v0.6
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          print: 'true'
+          pdfx: 'true'
+          kindle: 'true'
+      - name: Unit tests
+        run: if npm run | grep -q '^  test$'; then npm test; else echo "No npm test script"; fi
+      - name: Validate and lint
+        if: inputs.checks
+        run: just check-all
+      - name: Build
+        run: just ${{ inputs.recipe }}
+      # A recipe that builds no EPUB (e.g. `pdf`) skips EPUBCheck rather than
+      # failing on an empty glob.
+      - name: Find EPUBs
+        id: epubs
+        run: |
+          dist="$(node node_modules/book-kit/bin/book-kit.js config paths.dist)"
+          echo "dist=$dist" >> "$GITHUB_OUTPUT"
+          {
+            echo 'files<<EOF'
+            ls "$PWD/$dist"/*.epub 2>/dev/null || true
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+      - uses: benbalter/book-kit/actions/epubcheck@v0.6
+        if: steps.epubs.outputs.files != ''
+        with:
+          files: ${{ steps.epubs.outputs.files }}
+      - name: Validate PDF/X-1a
+        run: |
+          bk="node node_modules/book-kit/bin/book-kit.js"
+          f="$($bk config paths.dist)/$($bk config output.basename)$($bk config output.pdfx_suffix).pdf"
+          if [ -f "$f" ]; then gs -o /dev/null -sDEVICE=nullpage "$f"; fi
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ inputs.artifact-name }}
+          path: |
+            ${{ inputs.working-directory }}/${{ steps.epubs.outputs.dist }}/*.epub
+            ${{ inputs.working-directory }}/${{ steps.epubs.outputs.dist }}/*.pdf
+            ${{ inputs.working-directory }}/${{ steps.epubs.outputs.dist }}/*.html
+            ${{ inputs.working-directory }}/${{ steps.epubs.outputs.dist }}/*.docx

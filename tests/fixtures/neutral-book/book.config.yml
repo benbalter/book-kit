@@ -1,0 +1,10 @@
+# A book on the kit defaults alone: no preset. CI builds it in every format to
+# prove the neutral core works without business-nonfiction (example/ covers
+# the preset).
+metadata:
+  title: A Neutral Book
+  author: [A. N. Author]
+  publisher: Example Press
+  rights: © 2026 Example Press. Licensed for testing.
+  uuid: 6b1f3c2e-8d4a-4f7b-9e2c-1a5d7c3b9e40
+  pub_date: "2026-01-01"

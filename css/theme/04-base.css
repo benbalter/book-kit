@@ -1,0 +1,226 @@
+/* ============================================
+   BASE LAYER - Element Resets & Typography
+   ============================================ */
+@layer base {
+  body {
+    font-family: var(--font-body);
+    font-optical-sizing: auto;
+    text-align: left;
+    line-height: var(--book-line-height);
+    letter-spacing: var(--book-letter-spacing);
+    word-spacing: var(--book-word-spacing);
+    font-kerning: normal;
+    font-variant-ligatures: common-ligatures contextual;
+    font-variant-numeric: oldstyle-nums proportional-nums;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Variable font weight for bold — 600 (semibold) gives better
+     color and texture than browser-default 700 with Source Serif 4. */
+  strong,
+  b {
+    font-weight: 600;
+  }
+
+  /* Paragraph typography for book readability */
+  p {
+    margin-bottom: var(--book-paragraph-spacing);
+    /* hanging-punctuation: Safari-only, stripped for EPUB compatibility */
+    hanging-punctuation: first allow-end last;
+  }
+
+  /* Heading Hierarchy — clear visual distinction at every level */
+  h1 {
+    font-family: var(--font-heading);
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: var(--book-heading-line-height);
+    margin-top: 0;
+    margin-bottom: 1.25rem;
+    letter-spacing: normal;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  h2 {
+    font-family: var(--font-heading);
+    font-size: 1.75rem;
+    font-weight: 700;
+    line-height: var(--book-heading-line-height);
+    margin-top: 2.5rem;
+    margin-bottom: 0.75rem;
+    letter-spacing: normal;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  h3 {
+    font-family: var(--font-heading);
+    font-size: 1.35rem;
+    font-weight: 700;
+    line-height: var(--book-heading-line-height);
+    margin-top: 2rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: normal;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+    orphans: 3;
+    widows: 3;
+  }
+
+  h4 {
+    font-family: var(--font-heading);
+    font-size: 1.15rem;
+    font-weight: 700;
+    line-height: var(--book-heading-line-height);
+    margin-top: 1.5rem;
+    margin-bottom: 0.35rem;
+    letter-spacing: normal;
+    orphans: 2;
+    widows: 2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  h5 {
+    font-family: var(--font-heading);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: var(--book-heading-line-height);
+    margin-top: 1.25rem;
+    margin-bottom: 0.25rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    orphans: 2;
+    widows: 2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  h6 {
+    font-family: var(--font-heading);
+    font-size: 0.95rem;
+    font-weight: 700;
+    line-height: var(--book-heading-line-height);
+    margin-top: 1rem;
+    margin-bottom: 0.25rem;
+    letter-spacing: normal;
+    font-style: italic;
+    orphans: 2;
+    widows: 2;
+    page-break-after: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Navigation and TOC */
+  nav {
+    page-break-after: avoid;
+  }
+
+  #TOC {
+    page-break-inside: auto;
+  }
+
+  #TOC li {
+    list-style: none;
+    margin-bottom: 0.4em;
+    line-height: 1.4;
+  }
+
+  #TOC a {
+    color: inherit;
+    text-decoration: none;
+    margin-bottom: 0.2em;
+  }
+
+  /* Page numbers in TOC — CSS Paged Media, print/PDF only.
+     Scoped here so strip-page-rules.js naturally excludes it from EPUB
+     (target-counter is unsupported by Kindle and all e-readers). */
+  @media print {
+    #TOC a {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      padding-right: 0;
+    }
+
+    #TOC a::after {
+      content: target-counter(attr(href), page);
+      flex-shrink: 0;
+      margin-left: auto;
+      font-weight: normal;
+      white-space: nowrap;
+      font-family: var(--font-heading);
+      font-variant-numeric: lining-nums tabular-nums;
+      text-align: right;
+      width: 2.5em;
+    }
+  }
+
+  #TOC ul {
+    padding-left: 1.5rem;
+  }
+
+  #TOC > ul {
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
+  }
+
+  /* Top-level TOC entries (section headings) get extra weight */
+  #TOC > ul > li {
+    margin-bottom: 0.6em;
+    font-weight: 500;
+  }
+
+  /* Nested TOC entries (chapter titles) */
+  #TOC > ul > li > ul > li {
+    font-weight: 400;
+    font-size: 0.95em;
+  }
+
+  /* Small caps strategy:
+     • Screen: OpenType smcp/c2sc glyphs at natural size (no compensation)
+     • Print: font-size: inherit — Source Serif 4 provides real smcp glyphs
+     • EPUB: font-size: 1.05em compensation — e-readers often synthesize
+       small caps by scaling down uppercase, which renders shorter than
+       true OpenType glyphs. 1.05em brings visual height closer to x-height. */
+
+  /* Small Caps for Acronyms 
+   * IMPORTANT: Do NOT add font-size reduction here.
+   * all-small-caps renders at x-height (matching lowercase).
+   * Adding font-size < 1em would make small caps shorter than lowercase letters.
+   */
+  span.smallcaps {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.05em;
+  }
+
+  /* Title Block Elements */
+  p.author,
+  p.subtitle,
+  p.date {
+    font-family: var(--font-heading);
+  }
+
+  h1.title,
+  p.author,
+  p.subtitle,
+  p.date,
+  div.rights {
+    text-align: center;
+  }
+
+  p.subtitle {
+    font-size: 1.15rem;
+    font-weight: 300;
+    line-height: 1.5;
+    font-style: italic;
+    color: var(--color-muted);
+  }
+}

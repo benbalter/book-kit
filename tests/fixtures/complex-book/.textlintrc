@@ -1,0 +1,10 @@
+{
+  "filters": {
+    "comments": true
+  },
+  "rules": {
+    "common-misspellings": true,
+    "doubled-spaces": true,
+    "@textlint-rule/no-unmatched-pair": true
+  }
+}

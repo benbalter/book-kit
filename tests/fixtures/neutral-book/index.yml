@@ -1,0 +1,5 @@
+# Chapters, in reading order.
+input-files:
+  - src/copyright.md
+  - src/first-steps.md
+  - src/next-steps.md

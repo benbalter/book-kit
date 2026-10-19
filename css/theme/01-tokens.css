@@ -1,0 +1,83 @@
+/* ============================================
+   THEME LAYER - Design Tokens & Variables
+   Using @theme for utility class generation
+   ============================================ */
+@theme {
+  /* ── Design Tokens ──────────────────────────────────────────────
+     These tokens generate Tailwind utility classes.
+     
+     Safe to modify:
+     • Brand colors (--color-brand, etc.) — used in screen CSS only
+     • Spacing scale (--spacing-*) — layout breathing room
+     • Line-height, paragraph spacing — reading comfort
+     
+     Format-dependent (change with care):
+     • Font families — must match @font-face declarations
+     • Callout colors — have corresponding dark-mode overrides
+     • Border radius — EPUB strips border-radius on some readers
+     ────────────────────────────────────────────────────────────── */
+
+  /* Book Typography - Source font family (Adobe, SIL Open Font License)
+     Source Serif 4: transitional serif with optical sizes, ideal for book body text
+     Source Sans 3: matching sans-serif for headings and callouts
+     Source Code Pro: matching monospace for code blocks */
+  --font-body: "Source Serif 4", "Source Serif 4 NotEqual", serif;
+  --font-heading: "Source Sans 3", sans-serif;
+  --font-mono: "Source Code Pro", "Courier New", monospace;
+  --font-emoji:
+    "Noto Color Emoji", "Apple Color Emoji", "Segoe UI Emoji", sans-serif;
+
+  /* Book Brand Colors */
+  --color-brand: #0056b3;
+  --color-muted: #6c757d;
+  --color-surface: #f8f9fa; /* Available for backgrounds */
+  --color-border: #dee2e6;
+  --color-emphasis: #495057;
+
+  /* Callout: Summary (TL;DR) */
+  --color-summary-bg: #f8f9fa;
+  --color-summary-border: #0056b3;
+
+  /* Callout: Tip */
+  --color-tip-bg: #f8f6f0;
+  --color-tip-accent: #b8956a;
+
+  /* Callout: Manager Guidance */
+  --color-manager-bg: #f0f4fa;
+  --color-manager-accent: #6a95c2;
+
+  /* Callout: IC Guidance */
+  --color-ic-bg: #f0f8f1;
+  --color-ic-accent: #6aaa6e;
+
+  /* Callout: Objection */
+  --color-objection-bg: #faf0f3;
+  --color-objection-accent: #b07090;
+
+  /* Core callouts (the kit defaults' note, tip, warning). Tip reuses the
+     Pro-Tip palette. */
+  --color-note-bg: #f5f7fa;
+  --color-note-accent: #8a9bb0;
+  --color-warning-bg: #fdf6e9;
+  --color-warning-accent: #c98a2b;
+
+  /* Callout: Takeaways */
+  --color-takeaway-bg: #f5f6f7;
+  --color-takeaway-border: #c8d4d9;
+
+  /* Print Grayscale Palette — Values used by @media print hardcoded rules */
+
+  /* Spacing Scale for Book Layout */
+  --spacing-callout: 1rem;
+  --spacing-section: 2rem;
+
+  /* Border Radius Scale */
+  --radius-callout: 0.375rem;
+
+  /* Book Typography Scale — Optimized for long-form reading */
+  --book-line-height: 1.6;
+  --book-paragraph-spacing: 0.75em;
+  --book-heading-line-height: 1.2;
+  --book-letter-spacing: normal;
+  --book-word-spacing: 0.02em;
+}

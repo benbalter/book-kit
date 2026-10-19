@@ -1,0 +1,42 @@
+%!PS-Adobe-3.0
+% PDF/X-1a:2001 output intent definition for Ghostscript
+%
+% This file defines the output intent metadata required by the PDF/X-1a:2001
+% standard. It references the USWebCoatedSWOP.icc CMYK ICC profile, which is
+% the standard profile for U.S. web offset printing.
+%
+% Used by: commands/convert-pdfx.sh via Ghostscript
+% See also: commands/download-icc-profile.sh for obtaining the ICC profile
+%
+% The pdfmark sequence follows Ghostscript's PDFX_def.ps example (see
+% NOTICE.md).
+%
+% The __ICC_PROFILE_PATH__ and __TITLE__ placeholders are replaced at runtime by
+% convert-pdfx.sh (the title is PostScript-escaped there).
+
+% Document info dictionary
+[ /GTS_PDFXVersion (PDF/X-1a:2001)
+  /Title (__TITLE__)
+  /Trapped /False
+/DOCINFO pdfmark
+
+% ICC profile path (placeholder substituted at build time)
+/ICCProfile (__ICC_PROFILE_PATH__) def
+
+% Create a stream object for the ICC profile
+[/_objdef {icc_PDFX} /type /stream /OBJ pdfmark
+[{icc_PDFX} << /N 4 >> /PUT pdfmark
+[{icc_PDFX} ICCProfile (r) file /PUT pdfmark
+
+% Output intent dictionary
+[/_objdef {OutputIntent_PDFX} /type /dict /OBJ pdfmark
+[{OutputIntent_PDFX} <<
+  /Type /OutputIntent
+  /S /GTS_PDFX
+  /OutputCondition (U.S. Web Coated \(SWOP\) v2)
+  /OutputConditionIdentifier (CGATS TR 001)
+  /RegistryName (http://www.color.org)
+  /Info (U.S. Web Coated \(SWOP\) v2)
+  /DestOutputProfile {icc_PDFX}
+>> /PUT pdfmark
+[{Catalog} << /OutputIntents [ {OutputIntent_PDFX} ] >> /PUT pdfmark

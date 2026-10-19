@@ -1,0 +1,6 @@
+# Font embedding for standard EPUB (Apple Books, Kobo, etc.): variable WOFF2
+# with the full weight range and optical sizing. Split from pandoc-epub.yml
+# because Kindle needs static fonts and pandoc merges (not replaces)
+# epub-fonts across defaults files.
+epub-fonts:
+- "./fonts/*.woff2"

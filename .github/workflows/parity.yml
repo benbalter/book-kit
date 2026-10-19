@@ -1,0 +1,166 @@
+# Reusable build parity check: builds a book at the pull request's base and at
+# its head on the same runner, then fails on any difference in any format
+# (`book-kit parity`). Use it on changes that must not change the book: a
+# book-kit upgrade, a toolchain bump, a build refactor. A book calls it from
+# its own workflow:
+#
+#   on:
+#     pull_request:
+#       paths: [package.json, package-lock.json, justfile, book.config.yml]
+#   jobs:
+#     parity:
+#       uses: benbalter/book-kit/.github/workflows/parity.yml@v0.6
+#       permissions:
+#         contents: read
+#         packages: read   # only while the base still installs @benbalter/book-kit
+#
+# The head build must also leave the working tree clean: a build that rewrites
+# tracked files dirties every checkout it runs in. Both builds carry the base's
+# build stamp, so a VERSION bump alone doesn't fail the check.
+name: Build parity
+
+on:
+  workflow_call:
+    inputs:
+      working-directory:
+        description: Directory holding the book (book.config.yml, justfile)
+        type: string
+        default: .
+      base-ref:
+        description: Commit to compare against (default the pull request's base, else the default branch)
+        type: string
+        default: ''
+      recipes:
+        description: just recipes to build on both sides; they must exist at the base too
+        type: string
+        default: epub kindle html pdf pdfx
+      artifact-name:
+        description: Name of the uploaded artifact (both builds and the comparison)
+        type: string
+        default: parity
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  parity:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    defaults:
+      run:
+        working-directory: ${{ inputs.working-directory }}
+    env:
+      BASE_REF: ${{ inputs.base-ref || github.event.pull_request.base.sha || github.event.repository.default_branch }}
+      RECIPES: ${{ inputs.recipes }}
+      BOOK_DIR: ${{ inputs.working-directory }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: benbalter/book-kit/actions/setup-book-kit@v0.6
+        with:
+          working-directory: ${{ inputs.working-directory }}
+          print: 'true'
+          pdfx: 'true'
+          kindle: 'true'
+
+      - name: Build the base
+        env:
+          # For a base that still installs @benbalter/book-kit from GitHub Packages.
+          NODE_AUTH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          base="$RUNNER_TEMP/base"
+          # A branch name exists only as origin/<branch> in the checkout.
+          ref="$BASE_REF"
+          git rev-parse --verify --quiet "$ref^{commit}" >/dev/null || ref="origin/$BASE_REF"
+          git worktree add --detach "$base" "$ref"
+          cd "$base/$BOOK_DIR"
+          # Both builds get the base's build stamp ("<VERSION> (<short sha>)",
+          # the kit's formula), so the commit hash on the copyright page
+          # doesn't count as a difference.
+          version="$(tr -d '[:space:]' < VERSION 2>/dev/null || true)"
+          BOOK_KIT_REVISION="${version:-0.1.0} ($(git rev-parse --short HEAD))"
+          # Likewise the build time (the kit defaults it to each side's last
+          # commit), so an undated book's dc:date doesn't differ either.
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          export BOOK_KIT_REVISION SOURCE_DATE_EPOCH
+          {
+            echo "BOOK_KIT_REVISION=$BOOK_KIT_REVISION"
+            echo "SOURCE_DATE_EPOCH=$SOURCE_DATE_EPOCH"
+          } >> "$GITHUB_ENV"
+          echo "Build stamp for both sides: $BOOK_KIT_REVISION, time $SOURCE_DATE_EPOCH"
+          npm ci --no-audit --no-fund
+          # setup-book-kit installed the head's pandoc and WeasyPrint. When the
+          # base's kit pins different versions, build the base with those, or
+          # a toolchain bump would be compared against itself and any reflow
+          # would go unnoticed.
+          # Kits before 0.6 installed as @benbalter/book-kit from GitHub Packages.
+          tc=node_modules/book-kit/toolchain.json
+          [ -f "$tc" ] || tc=node_modules/@benbalter/book-kit/toolchain.json
+          if [ -f "$tc" ]; then
+            pandoc_want="$(jq -r .pandoc "$tc")"
+            if [ "$(pandoc --version | sed -n 1p)" != "pandoc $pandoc_want" ]; then
+              echo "Base pins pandoc $pandoc_want; installing it for the base build"
+              deb="pandoc-${pandoc_want}-1-$(dpkg --print-architecture).deb"
+              curl -fsSL --retry 3 -o "$RUNNER_TEMP/$deb" "https://github.com/jgm/pandoc/releases/download/${pandoc_want}/${deb}"
+              dpkg -x "$RUNNER_TEMP/$deb" "$RUNNER_TEMP/base-pandoc"
+              export PATH="$RUNNER_TEMP/base-pandoc/usr/bin:$PATH"
+            fi
+            weasy_want="$(jq -r '.python.weasyprint // empty' "$tc")"
+            weasy_have="$(python -m pip show weasyprint 2>/dev/null | sed -n 's/^Version: //p' || true)"
+            if [ -n "$weasy_want" ] && [ -n "$weasy_have" ] && [ "$weasy_want" != "$weasy_have" ]; then
+              echo "Base pins WeasyPrint $weasy_want (head has $weasy_have); installing it for the base build"
+              # System site packages keep the head's Pillow and pikepdf.
+              python -m venv --system-site-packages "$RUNNER_TEMP/base-venv"
+              "$RUNNER_TEMP/base-venv/bin/python" -m pip install --disable-pip-version-check "weasyprint==$weasy_want"
+              export PATH="$RUNNER_TEMP/base-venv/bin:$PATH"
+            fi
+          fi
+          pandoc --version | sed -n 1p
+          if command -v weasyprint >/dev/null; then weasyprint --version; fi
+          # shellcheck disable=SC2086 # RECIPES is a list of recipe names
+          just $RECIPES
+
+      - name: Build the head
+        run: |
+          # shellcheck disable=SC2086
+          just $RECIPES
+
+      - name: Check the build left the tree clean
+        run: |
+          # --porcelain also lists untracked files, which git diff ignores.
+          dirty="$(git status --porcelain)"
+          if [ -n "$dirty" ]; then echo "$dirty"; git diff --stat; exit 1; fi
+
+      - name: Compare
+        run: |
+          dist="$(npx book-kit config paths.dist)"
+          npx book-kit parity "$RUNNER_TEMP/base/$BOOK_DIR/$dist" "$dist" "$RUNNER_TEMP/parity"
+
+      - name: Find EPUBs
+        id: epubs
+        run: |
+          dist="$(npx book-kit config paths.dist)"
+          {
+            echo 'files<<EOF'
+            ls "$PWD/$dist"/*.epub 2>/dev/null || true
+            echo EOF
+          } >> "$GITHUB_OUTPUT"
+      - uses: benbalter/book-kit/actions/epubcheck@v0.6
+        if: steps.epubs.outputs.files != ''
+        with:
+          files: ${{ steps.epubs.outputs.files }}
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: ${{ inputs.artifact-name }}
+          retention-days: 7
+          path: |
+            ${{ runner.temp }}/parity/
+            ${{ inputs.working-directory }}/dist/*.epub
+            ${{ inputs.working-directory }}/dist/*.pdf
+            ${{ inputs.working-directory }}/dist/*.html
+            ${{ inputs.working-directory }}/dist/*.docx

@@ -1,0 +1,7 @@
+/* The neutral fixture book's stylesheet: Tailwind and the kit theme, nothing else. */
+@import "tailwindcss";
+@plugin "@tailwindcss/typography";
+@import "../../../../css/theme.css";
+
+@source "../../../../templates";
+@source "../../../../filters";

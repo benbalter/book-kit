@@ -1,0 +1,53 @@
+/* ============================================
+   TAILWIND TYPOGRAPHY - PROSE CONTAINER STYLES
+   Pandoc content should use class="prose" wrapper
+   for Typography descendant rules to activate.
+   ============================================ */
+
+/* Base prose configuration with book theme colors */
+.prose {
+  @apply prose-neutral max-w-none;
+  --tw-prose-body: var(--color-emphasis);
+  --tw-prose-headings: var(--color-emphasis);
+  --tw-prose-lead: var(--color-muted);
+  --tw-prose-links: var(--color-brand);
+  --tw-prose-bold: var(--color-emphasis);
+  --tw-prose-counters: var(--color-muted);
+  --tw-prose-bullets: var(--color-border);
+  --tw-prose-hr: var(--color-border);
+  --tw-prose-quotes: var(--color-emphasis);
+  --tw-prose-quote-borders: var(--color-muted);
+  --tw-prose-captions: var(--color-muted);
+  --tw-prose-code: var(--color-emphasis);
+  --tw-prose-pre-code: #1f2937;
+  --tw-prose-pre-bg: #f8f8f8;
+  --tw-prose-th-borders: var(--color-border);
+  --tw-prose-td-borders: var(--color-border);
+}
+
+/* Comfortable reading width on screen */
+@media screen {
+  .prose {
+    max-width: 40rem;
+    margin-left: auto;
+    margin-right: auto;
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+/* Larger text on medium screens */
+@media screen and (min-width: 768px) {
+  .prose {
+    @apply prose-lg;
+    max-width: 42rem;
+  }
+}
+
+/* Extra large text on wide screens */
+@media screen and (min-width: 1024px) {
+  .prose {
+    @apply prose-xl;
+    max-width: 44rem;
+  }
+}

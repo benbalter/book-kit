@@ -1,0 +1,18 @@
+# Chapters, in reading order. Comment lines name the sections.
+input-files:
+  # Front matter
+  - src/copyright.md
+  - src/dedication.md
+
+  # Getting started
+  - src/getting-started.md
+  - src/callouts-and-conventions.md
+  - src/getting-started-key-takeaways.md
+
+  # Going further
+  - src/formats-and-features.md
+  - src/web-only.md
+  # __PRINT_ONLY_PAGE__
+
+  # Appendix
+  - src/appendix-glossary.md

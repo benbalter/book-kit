@@ -1,0 +1,119 @@
+# The kit's own CI: unit tests, then a full build of example/ in every format
+# with EPUBCheck and PDF/X validation. Books use build.yml (workflow_call).
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# A new push to a pull request supersedes its running build; main runs finish.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .tool-versions
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      - run: npm run lint
+      # shellcheck ships on the runner image.
+      - run: shellcheck commands/*.sh
+      - uses: raven-actions/actionlint@v2
+
+  test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      # The Lua filter and emoji tests need pandoc and Pillow.
+      - uses: ./actions/setup-book-kit
+        with:
+          kindle: 'true'
+      - run: npm test
+        env:
+          # Extra privacy-test terms too short to ship as hashes (tests/privacy-scan.js).
+          BOOK_KIT_PRIVACY_TERMS: ${{ secrets.BOOK_KIT_PRIVACY_TERMS }}
+
+  # example/ extends the business-nonfiction preset; the neutral fixture book
+  # uses the kit defaults alone, so both configurations build in every format.
+  example:
+    name: example (${{ matrix.name }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - name: business-nonfiction
+            book: example
+          - name: neutral
+            book: tests/fixtures/neutral-book
+          # Shaped like a production book: its own filter, print-only and
+          # web-only pages, emoji outside dist/, a renamed PDF/X, a page lock.
+          - name: complex
+            book: tests/fixtures/complex-book
+    env:
+      BOOK: ${{ matrix.book }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: ./actions/setup-book-kit
+        with:
+          print: 'true'
+          pdfx: 'true'
+          kindle: 'true'
+      - name: Validate, lint, and prose-check the book
+        working-directory: ${{ matrix.book }}
+        run: just check-all
+      - name: Build every format
+        working-directory: ${{ matrix.book }}
+        run: just all docx arc
+      - name: Check the build left the tree clean
+        run: |
+          # --porcelain also lists untracked files, which git diff ignores.
+          dirty="$(git status --porcelain)"
+          if [ -n "$dirty" ]; then echo "$dirty"; git diff --stat; exit 1; fi
+      # A second build must match the first exactly: catches nondeterministic
+      # output, and exercises `book-kit parity` (the parity.yml workflow's
+      # comparison) on every format.
+      - name: Rebuild and compare
+        working-directory: ${{ matrix.book }}
+        run: |
+          mv dist "$RUNNER_TEMP/first"
+          just all docx arc
+          node "$GITHUB_WORKSPACE/bin/book-kit.js" parity "$RUNNER_TEMP/first" dist "$RUNNER_TEMP/parity"
+          # parity ignores timestamps; with SOURCE_DATE_EPOCH set from the
+          # commit, the zipped formats should match byte for byte too.
+          for f in dist/*.epub dist/*.docx; do
+            cmp "$RUNNER_TEMP/first/$(basename "$f")" "$f"
+          done
+      - uses: ./actions/epubcheck
+        with:
+          files: |
+            ${{ matrix.book }}/dist/book.epub
+            ${{ matrix.book }}/dist/book-kindle.epub
+            ${{ matrix.book }}/dist/book-arc.epub
+            ${{ matrix.book }}/dist/book-kindle-arc.epub
+      - name: Validate PDF/X-1a with Ghostscript
+        run: |
+          # The PDF/X file name comes from output.pdfx_suffix.
+          suffix="$(cd "$BOOK" && node "$GITHUB_WORKSPACE/bin/book-kit.js" config output.pdfx_suffix)"
+          gs -o /dev/null -sDEVICE=nullpage "$BOOK/dist/book${suffix}.pdf"
+      - uses: actions/upload-artifact@v7
+        with:
+          name: ${{ matrix.name }}-book
+          path: |
+            ${{ matrix.book }}/dist/*.epub
+            ${{ matrix.book }}/dist/*.pdf
+            ${{ matrix.book }}/dist/*.html

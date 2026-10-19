@@ -1,0 +1,22 @@
+{
+  "filters": {
+    "comments": true
+  },
+  "rules": {
+    "no-start-duplicated-conjunction": {
+      "interval": 2
+    },
+    "common-misspellings": {
+      "ignore": [
+        "doesnt",
+        "isnt"
+      ]
+    },
+    "diacritics": true,
+    "doubled-spaces": true,
+    "en-capitalization": false,
+    "@textlint-rule/no-unmatched-pair": true,
+    "@textlint-rule/no-duplicate-abbr": true,
+    "abbr-within-parentheses": true
+  }
+}

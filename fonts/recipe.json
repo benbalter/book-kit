@@ -1,0 +1,41 @@
+{
+  "$comment": "How `book-kit fonts` builds the theme's fonts from the unmodified upstream files pinned in toolchain.json `fonts`: Adobe's Source Serif 4 release, and Google Fonts' builds of Source Sans 3 and Source Code Pro, whose vertical metrics and hinting set the theme's line heights. The kit ships only this recipe, never the derived files: the fonts are OFL-licensed with the Reserved Font Name 'Source', which bars redistributing modified versions under that name, while subsetting them for your own build and embedding them in a book is fine. Output names are what css/theme.css, commands/kindle-fonts.js, and the pandoc defaults load. Changing anything here or in toolchain.json `fonts` can reflow a locked print page count.",
+  "unicodes": {
+    "serif": "U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2002-2007,U+2009-200B,U+2010,U+2012-2015,U+2018-201A,U+201C-201E,U+2020-2022,U+2025-2026,U+202F-2030,U+2032-2033,U+2039-203A,U+203C,U+2044,U+2047-2049,U+2074,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215",
+    "sans": "U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+2009,U+200B,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF",
+    "code": "U+0020-007E,U+00A0-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0300-0301,U+0303-0304,U+0308-0309,U+0323,U+0329,U+2013-2014,U+2018-201A,U+201C-201E,U+2022,U+2026,U+2032-2033,U+2039-203A,U+2044,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF",
+    "not-equal": "U+2260"
+  },
+  "features": {
+    "serif": ["aalt", "c2sc", "case", "ccmp", "dnom", "frac", "kern", "liga", "lnum", "locl", "mark", "mkmk", "numr", "onum", "ordn", "pnum", "sinf", "smcp", "ss03", "subs", "sups", "tnum", "zero"],
+    "sans": ["ccmp", "dnom", "frac", "kern", "liga", "locl", "mark", "mkmk", "numr", "pnum"],
+    "code": ["ccmp", "dnom", "frac", "locl", "mark", "mkmk", "numr"],
+    "not-equal": ["kern"]
+  },
+  "$drop_tables": "Tables to remove after subsetting (Source Serif's BASE never shipped in the theme).",
+  "$names": "Name-table records to overwrite (nameID: string). They keep the ≠ faces' embedded font names distinct: WeasyPrint draws the wrong glyph when the ≠ face shares the main face's name.",
+  "subsets": [
+    { "out": "SourceSerif4-Variable-Latin.woff2", "source": "source-serif", "member": "source-serif-4.005_Desktop/VAR/SourceSerif4Variable-Roman.ttf", "unicodes": "serif", "features": "serif", "drop_tables": ["BASE"] },
+    { "out": "SourceSerif4-Italic-Variable-Latin.woff2", "source": "source-serif", "member": "source-serif-4.005_Desktop/VAR/SourceSerif4Variable-Italic.ttf", "unicodes": "serif", "features": "serif", "drop_tables": ["BASE"] },
+    { "out": "SourceSerif4-NotEqual.woff2", "source": "source-serif", "member": "source-serif-4.005_Desktop/VAR/SourceSerif4Variable-Roman.ttf", "unicodes": "not-equal", "features": "not-equal", "names": {"1": "Source Serif 4 NotEqual", "3": "SourceSerif4NotEqual;4.005", "4": "Source Serif 4 NotEqual", "6": "SourceSerif4NotEqual"} },
+    { "out": "SourceSerif4-Italic-NotEqual.woff2", "source": "source-serif", "member": "source-serif-4.005_Desktop/VAR/SourceSerif4Variable-Italic.ttf", "unicodes": "not-equal", "features": "not-equal", "names": {"1": "Source Serif 4 NotEqual Italic", "3": "SourceSerif4NotEqual-Italic;4.005", "4": "Source Serif 4 NotEqual Italic", "6": "SourceSerif4NotEqual-Italic"} },
+    { "out": "SourceSans3-Variable-Latin.woff2", "source": "source-sans-3", "unicodes": "sans", "features": "sans" },
+    { "out": "SourceSans3-Italic-Variable-Latin.woff2", "source": "source-sans-3-italic", "unicodes": "sans", "features": "sans" },
+    { "out": "SourceCodePro-Variable-Latin.woff2", "source": "source-code-pro", "unicodes": "code", "features": "code" },
+    { "out": "SourceCodePro-Italic-Variable-Latin.woff2", "source": "source-code-pro-italic", "unicodes": "code", "features": "code" }
+  ],
+  "$instances": "Static instances for Kindle, which ignores variable fonts. Each pins every axis of a subset above; axes left out are pinned at their default. Source Serif uses optical size 16, tuned for body text at e-reader sizes.",
+  "instances": [
+    { "out": "kindle/SourceSerif4-Regular.woff2", "from": "SourceSerif4-Variable-Latin.woff2", "axes": { "wght": 400, "opsz": 16 } },
+    { "out": "kindle/SourceSerif4-Bold.woff2", "from": "SourceSerif4-Variable-Latin.woff2", "axes": { "wght": 700, "opsz": 16 } },
+    { "out": "kindle/SourceSerif4-Italic.woff2", "from": "SourceSerif4-Italic-Variable-Latin.woff2", "axes": { "wght": 400, "opsz": 16 } },
+    { "out": "kindle/SourceSerif4-BoldItalic.woff2", "from": "SourceSerif4-Italic-Variable-Latin.woff2", "axes": { "wght": 700, "opsz": 16 } },
+    { "out": "kindle/SourceSans3-Regular.woff2", "from": "SourceSans3-Variable-Latin.woff2", "axes": { "wght": 400 } },
+    { "out": "kindle/SourceSans3-SemiBold.woff2", "from": "SourceSans3-Variable-Latin.woff2", "axes": { "wght": 600 } },
+    { "out": "kindle/SourceSans3-Bold.woff2", "from": "SourceSans3-Variable-Latin.woff2", "axes": { "wght": 700 } },
+    { "out": "kindle/SourceSans3-Italic.woff2", "from": "SourceSans3-Italic-Variable-Latin.woff2", "axes": { "wght": 400 } },
+    { "out": "kindle/SourceCodePro-Regular.woff2", "from": "SourceCodePro-Variable-Latin.woff2", "axes": { "wght": 400 } },
+    { "out": "kindle/SourceCodePro-Bold.woff2", "from": "SourceCodePro-Variable-Latin.woff2", "axes": { "wght": 700 } },
+    { "out": "kindle/SourceCodePro-Italic.woff2", "from": "SourceCodePro-Italic-Variable-Latin.woff2", "axes": { "wght": 400 } }
+  ]
+}

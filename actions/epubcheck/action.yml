@@ -1,0 +1,79 @@
+name: EPUBCheck (pinned, EPUB 3.2 + 3.3)
+description: >
+  Validate EPUB file(s) with TWO pinned EPUBCheck versions and require BOTH to
+  pass. The versions deliberately span rule sets: 4.2.6 validates against EPUB
+  3.2, 5.3.0 against EPUB 3.3. Their schemas diverge (e.g. 3.2 rejects
+  role="presentation" on <svg> via RSC-005; 3.3 allows it), and retailers run
+  different EPUBCheck versions, so passing BOTH is the only way to stay safe
+  across the supply chain. Pinned by version AND sha256 so an apt/tool bump
+  can't silently change the rule set out from under the release gate — the way
+  `apt-get install epubcheck` previously could. Bump deliberately: change the
+  versions + checksums in toolchain.json and re-triage what the new rule set flags.
+
+inputs:
+  files:
+    description: Whitespace/newline-separated list of .epub paths to validate.
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Java (Temurin 21)
+      uses: actions/setup-java@v6
+      with:
+        distribution: temurin
+        java-version: '21'  # keep in sync with toolchain.json .java (tests/toolchain.test.js)
+
+    - name: Run pinned EPUBCheck 3.2 + 3.3
+      shell: bash
+      env:
+        EPUBCHECK_FILES: ${{ inputs.files }}
+      run: |
+        set -euo pipefail
+
+        # Pinned release zips from github.com/w3c/epubcheck, version -> sha256,
+        # from the kit's toolchain.json.
+        tc='${{ github.action_path }}/../../toolchain.json'
+        declare -A SHA=()
+        for v in $(jq -r '.epubcheck | keys[]' "$tc"); do SHA[$v]="$(jq -r --arg v "$v" '.epubcheck[$v]' "$tc")"; done
+        declare -A RULES=(["4.2.6"]="3.2" ["5.3.0"]="3.3")
+        mapfile -t ORDER < <(jq -r '.epubcheck | keys[]' "$tc")   # deterministic run order
+
+        cache="${RUNNER_TEMP:-/tmp}/epubcheck"
+        mkdir -p "$cache"
+
+        # Download + checksum-verify + unzip each pinned version once.
+        for v in "${ORDER[@]}"; do
+          jar="$cache/epubcheck-$v/epubcheck.jar"
+          if [[ ! -f "$jar" ]]; then
+            zip="$cache/epubcheck-$v.zip"
+            url="https://github.com/w3c/epubcheck/releases/download/v$v/epubcheck-$v.zip"
+            echo "Downloading pinned EPUBCheck $v"
+            curl -fsSL -o "$zip" "$url"
+            echo "${SHA[$v]}  $zip" | sha256sum -c -
+            unzip -q -o "$zip" -d "$cache"
+          fi
+          [[ -f "$jar" ]] || { echo "::error::epubcheck.jar not found for $v"; exit 1; }
+        done
+
+        # Parse the files input (whitespace/newline separated).
+        read -r -a FILES <<< "$(echo "$EPUBCHECK_FILES" | tr '\n' ' ')"
+
+        fail=0
+        for f in "${FILES[@]}"; do
+          [[ -n "$f" ]] || continue
+          if [[ ! -f "$f" ]]; then
+            echo "::error::EPUB not found: $f"; fail=1; continue
+          fi
+          for v in "${ORDER[@]}"; do
+            echo "::group::EPUBCheck $v (EPUB ${RULES[$v]} rules) — $f"
+            if java -jar "$cache/epubcheck-$v/epubcheck.jar" "$f"; then
+              echo "PASS: $f (EPUBCheck $v / EPUB ${RULES[$v]} rules)"
+            else
+              echo "::error::$f FAILED EPUBCheck $v (EPUB ${RULES[$v]} rules)"
+              fail=1
+            fi
+            echo "::endgroup::"
+          done
+        done
+        exit "$fail"

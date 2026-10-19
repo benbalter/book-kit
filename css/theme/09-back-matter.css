@@ -1,0 +1,47 @@
+/* ============================================
+   BACK MATTER STYLING
+   Acknowledgements, About the Author, Back Cover
+   ============================================ */
+
+/* Acknowledgements — readable spacing */
+#acknowledgements ul {
+  font-size: 0.95em;
+  line-height: 1.5;
+}
+
+#acknowledgements ul li {
+  margin-bottom: 0.4em;
+}
+
+/* About the Author — distinct opening */
+#about-the-author {
+  page-break-before: always;
+  border-top: 2px solid #333;
+  padding-top: 1.5rem;
+}
+
+/* Back cover — distinct treatment */
+.back-cover {
+  font-family: var(--font-heading);
+  font-size: 1.05em;
+  line-height: 1.55;
+  margin: 2em 0;
+  page-break-before: always;
+}
+
+/* Task lists — restore checkboxes stripped by Tailwind preflight */
+.task-list {
+  list-style-type: none;
+  padding-left: 0;
+}
+
+.task-list li {
+  position: relative;
+  padding-left: 1.75em;
+}
+
+.task-list input[type="checkbox"] {
+  position: absolute;
+  left: 0;
+  top: 0.3em;
+}

@@ -1,0 +1,302 @@
+/* ============================================
+   DARK MODE - Apple Books, Kobo, Google Play
+   Kindle does NOT support prefers-color-scheme.
+   Colors adapted for dark backgrounds while
+   maintaining WCAG AA contrast (4.5:1 text, 3:1 borders).
+   Emoji images keep full opacity (small inline glyphs).
+   ============================================ */
+@media (prefers-color-scheme: dark) {
+  body {
+    background-color: #121212;
+  }
+
+  /* Body text. Must target `.prose` (the <body> carries class="prose"), not
+     just `body`: the @media not screen block sets `.prose { color: #000 }` for
+     e-ink readability, which strip-page-rules.js unwraps to an unconditional
+     top-level rule. Its (0,1,0) specificity outranks a plain `body` (0,0,1)
+     rule, so a `body { color }` override here would lose and leave all prose
+     text black on the dark canvas. Matching `.prose` (equal specificity, later
+     source order) wins.
+
+     The `color` alone is NOT enough for the web output. Tailwind Typography
+     paints descendants (p, strong, em, li, code, smallcaps) via
+     `.prose :where(el) { color: var(--tw-prose-*) }` rules that set color
+     explicitly — beating the inherited `.prose` color — and those vars default
+     to --color-emphasis (#495057) / --color-muted (#6c757d), i.e. 2.29:1 and
+     3.75:1 on #121212. So re-point every text-bearing prose var at the dark
+     palette here, or all body/bold/italic/list text is unreadable in dark mode.
+     (The EPUB build strips var() and these :where() color rules, so EPUB text
+     just inherits the light `.prose` color and is unaffected — this is purely
+     for the web/preview HTML, which keeps the full Tailwind prose CSS.) */
+  .prose {
+    color: #e0e0e0;
+    --tw-prose-body: #e0e0e0;
+    --tw-prose-headings: #f0f0f0;
+    --tw-prose-bold: #f0f0f0;
+    --tw-prose-lead: #aaa;
+    --tw-prose-counters: #bbb;
+    --tw-prose-quotes: #ccc;
+    --tw-prose-captions: #bbb;
+    --tw-prose-code: #d4d4d4;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: #f0f0f0;
+  }
+
+  a {
+    color: #6cb4ee;
+    text-decoration-color: #6cb4ee;
+  }
+
+  /* Code blocks */
+  pre {
+    background-color: #1e1e1e;
+    border-color: #3a3a3a;
+    color: #d4d4d4;
+  }
+
+  code {
+    background-color: #2a2a2a;
+    border-color: #444;
+    color: #d4d4d4;
+  }
+
+  pre code {
+    background-color: transparent;
+    border: none;
+  }
+
+  /* Blockquotes */
+  blockquote {
+    border-left-color: #555;
+    color: #ccc;
+  }
+
+  /* Light-mode readability rules (lines ~1268–1312) set color directly at
+     Tailwind-matching specificity — `.prose X:not(.not-prose)` — so they beat
+     both the element-level dark overrides above and the --tw-prose-* vars, and
+     their children (em/strong/smallcaps) inherit the dark #444/#555. Re-state
+     them here at equal specificity; later source order wins. Web output only —
+     the EPUB strips these selectors. */
+  .prose blockquote:not(.not-prose) {
+    color: #ccc;
+  }
+
+  .prose .lead:not(.not-prose) {
+    color: #bbb;
+  }
+
+  .prose figcaption:not(.not-prose) {
+    color: #bbb;
+  }
+
+  /* Callouts — lighten borders, darken backgrounds */
+  .callout-label {
+    color: #e0e0e0;
+  }
+
+  .tldr {
+    border-left-color: #5588cc;
+    background-color: #1a1f2e;
+  }
+
+  .pro-tip {
+    border-left-color: #c9a67a;
+    background-color: #2a2218;
+  }
+
+  .for-managers {
+    border-left-color: #7aa5d2;
+    background-color: #1a2233;
+  }
+
+  .for-ics {
+    border-left-color: #7aba7e;
+    background-color: #1a2a1c;
+  }
+
+  .common-objection {
+    border-left-color: #c080a0;
+    background-color: #2a1a22;
+  }
+
+  .takeaways {
+    border-left-color: #888;
+    background-color: #252525;
+  }
+
+  .note,
+  .callout {
+    border-left-color: #9aabc0;
+    background-color: #1c2128;
+  }
+
+  .tip {
+    border-left-color: #c9a67a;
+    background-color: #2a2218;
+  }
+
+  .warning {
+    border-left-color: #d9a04b;
+    background-color: #2b2214;
+  }
+
+  /* The "Key takeaways" H3 carries its own `.takeaways h3` color (0,1,1),
+     which outranks the dark `h1..h6` (0,0,1) override above — match its
+     specificity so the heading lightens on the dark callout background. */
+  .takeaways h3 {
+    color: #f0f0f0;
+  }
+
+  /* Tables */
+  table {
+    border-color: #555;
+  }
+
+  table th {
+    border-bottom-color: #888;
+    color: #f0f0f0;
+  }
+
+  table td {
+    border-bottom-color: #333;
+    color: #ddd;
+  }
+
+  table tbody tr:nth-child(even) {
+    background-color: #1e1e1e;
+  }
+
+  /* Title page. Use element+class selectors (p.subtitle, p.date, div.rights)
+     to match the (0,1,1) specificity of the light-mode title-block rules —
+     a bare `.subtitle` (0,1,0) override would lose to `p.subtitle`. */
+  h1.title {
+    border-top-color: #777;
+    color: #f0f0f0;
+  }
+
+  p.subtitle {
+    border-bottom-color: #777;
+    color: #bbb;
+  }
+
+  p.date,
+  div.rights {
+    color: #aaa;
+  }
+
+  /* Footnotes. `.footnote-ref` carries an explicit `color: #000` (0,1,0) for
+     e-ink — match that specificity so the superscript markers lighten on the
+     dark canvas instead of rendering black-on-dark. The Kindle build converts
+     external links to footnotes, so it has many such markers. */
+  .footnotes {
+    border-top-color: #444;
+  }
+
+  .footnote-ref {
+    color: #e0e0e0;
+  }
+
+  /* HR */
+  hr::after {
+    color: #777;
+  }
+
+  /* Images — reduce brightness to avoid blinding in dark mode */
+  img {
+    opacity: 0.85;
+  }
+
+  /* Emoji images keep full opacity — they're small inline glyphs,
+     not photos, and dimming makes them hard to read */
+  img.emoji {
+    opacity: 1;
+  }
+
+  /* Match callout emoji backgrounds to dark-mode callout colors */
+  .callout img.callout-emoji,
+  .note img.callout-emoji,
+  .tip img.callout-emoji,
+  .warning img.callout-emoji,
+  .pro-tip img.callout-emoji,
+  .callout img.emoji,
+  .note img.emoji,
+  .tip img.emoji,
+  .warning img.emoji,
+  .pro-tip img.emoji {
+    background-color: #2a2218 !important;
+    background: #2a2218 !important;
+  }
+
+  .for-managers img.callout-emoji,
+  .for-managers img.emoji {
+    background-color: #1a2233 !important;
+    background: #1a2233 !important;
+  }
+
+  .for-ics img.callout-emoji,
+  .for-ics img.emoji {
+    background-color: #1a2a1c !important;
+    background: #1a2a1c !important;
+  }
+
+  .common-objection img.callout-emoji,
+  .common-objection img.emoji {
+    background-color: #2a1a22 !important;
+    background: #2a1a22 !important;
+  }
+
+  img.emoji {
+    background-color: #1a1a1a !important;
+    background: #1a1a1a !important;
+  }
+
+  /* Chapter heading borders — hardcoded (not variable) because
+     @media (prefers-color-scheme: dark) applies in EPUB which strips var().
+     Matches code border-color #444 for visual consistency. */
+  .level1 > h1,
+  .level2 > h2 {
+    border-bottom-color: #444;
+  }
+
+  /* Muted text elements — light gray text becomes invisible on dark backgrounds.
+     These elements use gray text (color: #555–#767676) in light mode for
+     visual de-emphasis, but need lighter values for dark mode readability. */
+  .dedication,
+  .lead,
+  section.section-opener > p,
+  section.section-opener > ul,
+  section.section-opener > ol {
+    color: #aaa;
+  }
+
+  figcaption {
+    color: #bbb;
+  }
+
+  .publisher {
+    color: #999;
+  }
+
+  .revision {
+    color: #999;
+  }
+
+  .author {
+    color: #ddd;
+  }
+
+  #about-the-author {
+    border-top-color: #555;
+  }
+
+  .back-cover {
+    color: #ddd;
+  }
+}

@@ -1,0 +1,163 @@
+{
+  "filters": {
+    "comments": true
+  },
+  "rules": {
+    "no-start-duplicated-conjunction": {
+      "interval": 2
+    },
+    "write-good": {
+      "passive": false,
+      "so": false,
+      "weasel": false,
+      "thereIs": true,
+      "tooWordy": false,
+      "adverb": false,
+      "cliches": true,
+      "eprime": false
+    },
+    "terminology": {
+      "defaultTerms": false,
+      "exclude": [
+        "HTML",
+        "ID",
+        "URL",
+        "URLs"
+      ],
+      "terms": [
+        [
+          "Github",
+          "GitHub"
+        ],
+        [
+          "Javascript",
+          "JavaScript"
+        ],
+        [
+          "Typescript",
+          "TypeScript"
+        ],
+        [
+          "e-mail",
+          "email"
+        ],
+        [
+          "on-line",
+          "online"
+        ],
+        [
+          "web site",
+          "website"
+        ]
+      ]
+    },
+    "common-misspellings": {
+      "ignore": [
+        "doesnt",
+        "isnt"
+      ]
+    },
+    "diacritics": true,
+    "doubled-spaces": true,
+    "sentence-length": {
+      "max": 350
+    },
+    "en-max-word-count": {
+      "max": 80
+    },
+    "en-capitalization": false,
+    "@textlint-rule/no-unmatched-pair": true,
+    "@textlint-rule/no-duplicate-abbr": true,
+    "stop-words": {
+      "defaultWords": false
+    },
+    "alex": {
+      "allow": [
+        "actors-actresses",
+        "adult",
+        "adults",
+        "amateur",
+        "angry",
+        "attack",
+        "baby",
+        "ball",
+        "bigger",
+        "blind",
+        "bomb",
+        "burn",
+        "burns",
+        "buried",
+        "clearly",
+        "crack",
+        "cracks",
+        "dad-mom",
+        "damn",
+        "daughter-son",
+        "daughters-sons",
+        "dead",
+        "deposit",
+        "desire",
+        "destroys",
+        "devil",
+        "die",
+        "dirty",
+        "dive",
+        "doom",
+        "easy",
+        "enemy",
+        "everyone-knows",
+        "failed",
+        "failure",
+        "failures",
+        "faith",
+        "fear",
+        "fellowship",
+        "fight",
+        "fire",
+        "firing",
+        "gal-guy",
+        "god",
+        "hang",
+        "harder",
+        "he-she",
+        "her-him",
+        "hero-heroine",
+        "hijacking",
+        "hole",
+        "host-hostess",
+        "just",
+        "kids",
+        "kill",
+        "kills",
+        "lie",
+        "lies",
+        "master",
+        "master-key",
+        "newsman-newswoman",
+        "nuts",
+        "obvious",
+        "of-course",
+        "period",
+        "premature",
+        "radical",
+        "reject",
+        "remains",
+        "shoot",
+        "sick",
+        "simple",
+        "special",
+        "straightforward",
+        "suck",
+        "sucks",
+        "trap",
+        "traps",
+        "tribe"
+      ],
+      "profanitySureness": 2
+    },
+    "abbr-within-parentheses": true,
+    "max-comma": {
+      "max": 6
+    }
+  }
+}

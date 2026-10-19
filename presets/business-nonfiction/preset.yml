@@ -1,0 +1,128 @@
+# business-nonfiction: the house style book-kit grew up with, for practical
+# nonfiction aimed at managers and individual contributors. A book opts in with
+#
+#   extends: business-nonfiction
+#
+# in book.config.yml. Keys here override the kit defaults; the book's own keys
+# override these. Every key is documented in defaults/book.config.yml.
+#
+# Through 0.3 this was the kit default. Extending it reproduces that default
+# exactly (tests/presets.test.js checks), so a book upgrading from 0.3 keeps
+# its output by adding the line above.
+
+# Six callouts: a TL;DR that opens every chapter, role-specific guidance for
+# managers and individual contributors, and section takeaways. The two role
+# callouts pair both ways: a chapter with one should have the other
+# (the callout-balance validator).
+callouts:
+  - class: tldr
+    label: "TL;DR:"
+    aria: Summary
+  - class: pro-tip
+    label: "Pro-Tip:"
+    aria: Pro tip
+    emoji: "💡"
+    emoji_cp: 1f4a1
+    emoji_alt: light bulb
+  - class: for-managers
+    label: "For managers:"
+    aria: Guidance for managers
+    pair_with: for-ics
+    emoji: "👔"
+    emoji_cp: 1f454
+    emoji_alt: necktie
+  - class: for-ics
+    label: "For individual contributors:"
+    aria: Guidance for individual contributors
+    pair_with: for-managers
+    emoji: "💻"
+    emoji_cp: 1f4bb
+    emoji_alt: laptop
+  - class: common-objection
+    label: "Common objection:"
+    aria: Common objection
+    emoji: "🤔"
+    emoji_cp: 1f914
+    emoji_alt: thinking
+  - class: takeaways
+    aria: Key takeaways
+
+structure:
+  # Every chapter opens with a TL;DR.
+  required_callout: tldr
+  # Each section ends with a generated chapter collecting its TL;DRs
+  # (`just key-takeaways`).
+  takeaways_suffix: -key-takeaways
+  takeaways_skip_sections: [Front matter, Appendix, Conclusion, Back cover]
+
+validators:
+  options:
+    # The short name callout-balance warnings use for .for-ics.
+    callout-balance:
+      names: { for-ics: For ICs }
+  # The house-style checks the kit defaults turn off, back on at each
+  # validator's own severity.
+  severity:
+    section-intros: "on"
+    section-intro-no-tldr: "on"
+    section-intro-has-lead: "on"
+    section-intro-final-lead: "on"
+    no-transition-todos: "on"
+    min-opener-length: "on"
+    chapter-lengths: "on"
+    smallcaps: "on"
+    escaped-smallcaps: "on"
+    callout-balance: "on"
+    tldr-length: "on"
+    acronym-expansion: "on"
+    em-dashes: "on"
+    number-range-dashes: "on"
+    quote-punctuation: "on"
+    sentence-starters: "on"
+    list-punctuation: "on"
+    bold-keywords: "on"
+    hypothetical-hooks: "on"
+    paragraph-length: "on"
+
+lint:
+  # Prose-style textlint settings on top of the kit's mechanical base.
+  textlint:
+    rules:
+      write-good:
+        passive: false
+        so: false
+        weasel: false
+        thereIs: true
+        tooWordy: false
+        adverb: false
+        cliches: true
+        eprime: false
+      terminology:
+        defaultTerms: false
+        exclude: [HTML, ID, URL, URLs]
+        terms: [[Github, GitHub], [Javascript, JavaScript], [Typescript, TypeScript], [e-mail, email], [on-line, online], [web site, website]]
+      sentence-length:
+        max: 350
+      en-max-word-count:
+        max: 80
+      stop-words:
+        defaultWords: false
+      # Inclusive-language checks, with words that are fine in business prose
+      # (and in this style's own advice) allowed.
+      alex:
+        allow: [actors-actresses, adult, adults, amateur, angry, attack, baby, ball, bigger, blind, bomb, burn, burns, buried, clearly, crack, cracks, dad-mom, damn, daughter-son, daughters-sons, dead, deposit, desire, destroys, devil, die, dirty, dive, doom, easy, enemy, everyone-knows, failed, failure, failures, faith, fear, fellowship, fight, fire, firing, gal-guy, god, hang, harder, he-she, her-him, hero-heroine, hijacking, hole, host-hostess, just, kids, kill, kills, lie, lies, master, master-key, newsman-newswoman, nuts, obvious, of-course, period, premature, radical, reject, remains, shoot, sick, simple, special, straightforward, suck, sucks, trap, traps, tribe]
+        profanitySureness: 2
+      max-comma:
+        max: 6
+  # All six of the kit's house-style textlint rules.
+  rules:
+    no-ai-like-patterns: true
+    no-assumptive: true
+    no-bare-acronyms: true
+    no-cliches: true
+    no-cultural-idioms: true
+    no-vague-intensifiers: true
+  markdownlint:
+    proper-names:
+      names: [GitHub, JavaScript, TypeScript, Markdown, README]
+      code_blocks: false

@@ -1,0 +1,865 @@
+/* ============================================
+   EPUB / E-READER OVERRIDES (@media not screen)
+   These rules apply to EPUB and Kindle output.
+   strip-page-rules.js unwraps this block so rules
+   apply unconditionally in dist/style-epub.css.
+   Key constraints:
+   • Use em (not rem) for heading sizes (Kindle)
+   • Body typography (line-height, text-align, etc.)
+     must be inherit/normal — e-readers control these
+   • font-weight 300 → 400 (e-ink can't render light)
+   ============================================ */
+
+/* Justified text with hyphenation for non-screen (EPUB/e-reader) builds.
+   Most modern EPUB readers (Apple Books, Kobo, Google Play Books) handle
+   justified text well with hyphens:auto. Kindle uses its own justification
+   engine regardless of CSS. However, per Amazon's Kindle Publishing
+   Guidelines, we should NOT override reader-controlled properties (line-height,
+   text-align, letter-spacing, word-spacing) globally — readers retain full
+   control. We set hyphens (which readers don't typically control) and let
+   the e-reader handle the rest. */
+@media not screen {
+  body {
+    /* Force pure black text for e-ink readability.
+       Screen uses #495057 (--color-emphasis) which looks washed-out
+       on Kindle's 16-level grayscale display. */
+    color: #000;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    line-height: inherit;
+    text-align: inherit;
+    letter-spacing: normal;
+    word-spacing: normal;
+  }
+
+  /* Every EPUB chapter is <body class="prose">, and Tailwind Typography's
+     .prose { line-height: 1.75 } outranks the body rule above (class beats
+     element), so readers' line-spacing settings were ignored. Hand it back.
+     This also matches in print (WeasyPrint's print media is "not screen"),
+     where the print body rule's !important line-height still wins. */
+  .prose {
+    line-height: inherit;
+  }
+}
+
+/* Don't hyphenate headings or callout labels */
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  hyphens: none;
+  -webkit-hyphens: none;
+}
+
+/* Section intro headings — decorative rule matching PDF style */
+h1:not(.title) {
+  padding-top: 1.5em;
+}
+
+/* Give breathing room between chapter title and TL;DR */
+h2 + .tldr {
+  margin-top: 1.5rem;
+}
+
+/* First paragraph after TL;DR gets extra breathing room */
+.tldr + p {
+  margin-top: 1.25rem;
+}
+
+/* EPUB callout labels — injected by Lua filter (add-div-titles.lua).
+   PDF uses ::before pseudo-elements with font-variant-caps: all-small-caps
+   rendered via real OpenType smcp/c2sc features in Source Sans 3.
+   E-readers can't do proper small caps — they synthesize by uppercasing,
+   which looks crude. Instead, use sans-serif bold with letter-spacing
+   for a clean label that approximates PDF's refined small-caps look.
+   Keep the inline label itself on one line; actual pagination control must
+   happen at the source markup level, not via `page-break-*` on this span. */
+.callout-label {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: #333;
+  white-space: nowrap;
+}
+
+/* EPUB-optimized callout boxes — shared base */
+.tldr,
+.callout,
+.note,
+.tip,
+.warning,
+.pro-tip,
+.for-managers,
+.for-ics,
+.common-objection,
+.takeaways {
+  /* Ensure callouts don't break across pages */
+  page-break-inside: avoid;
+  break-inside: avoid;
+  /* Override the components-layer `box-decoration-break: clone` for e-readers.
+     clone is wanted in the PDF (WeasyPrint draws a complete border on each
+     page fragment) but on Kindle it signals the box is splittable, which can
+     defeat `page-break-inside: avoid` — the reader allocates the callout's
+     top edge + a sliver at the bottom of the preceding page and flows the
+     rest over, leaving an orphaned left-border strip behind. slice (the
+     default) lets `avoid` keep the callout whole. Print keeps clone via the
+     components layer, which @media not screen doesn't touch. */
+  -webkit-box-decoration-break: slice;
+  box-decoration-break: slice;
+  /* Generous breathing room for e-readers */
+  margin-top: 1.5rem;
+  margin-bottom: 1.5rem;
+  padding: 1em 1.5em;
+  border-radius: 4px;
+}
+
+/* Distinct callout identities for e-readers
+   Each callout type uses a different color solid left border. */
+.tldr {
+  border-left: 4px solid var(--color-summary-border);
+  background-color: var(--color-summary-bg);
+  /* Override the components-layer font-weight: 300 (light) for EPUB.
+     Light weights render poorly on e-ink displays and some readers
+     only support 400/700, so 300 may be indistinguishable from 400. */
+  font-weight: 400;
+}
+
+.pro-tip {
+  border-left: 3px solid var(--color-tip-accent);
+  background-color: #fafaf7;
+}
+
+.for-managers {
+  border-left: 3px solid var(--color-manager-accent);
+  background-color: #f5f8fc;
+}
+
+.for-ics {
+  border-left: 3px solid var(--color-ic-accent);
+  background-color: #f5fbf6;
+}
+
+.common-objection {
+  border-left: 3px solid var(--color-objection-accent);
+  background-color: #fdf5f7;
+}
+
+.takeaways {
+  border-left: 3px solid var(--color-takeaway-border);
+  background-color: var(--color-takeaway-bg);
+}
+
+.note,
+.callout {
+  border-left: 3px solid var(--color-note-accent);
+  background-color: var(--color-note-bg);
+}
+
+.tip {
+  border-left: 3px solid var(--color-tip-accent);
+  background-color: #fafaf7;
+}
+
+.warning {
+  border-left: 3px solid var(--color-warning-accent);
+  background-color: var(--color-warning-bg);
+}
+
+/* Ensure callout paragraphs display as blocks in EPUB.
+   The components layer sets p:first-child to display:inline for ::before
+   flow, but EPUB strips ::before (Lua filter injects labels instead).
+   We need :first-child specificity to override the component rule. */
+.tldr p:first-child,
+.callout p:first-child,
+.note p:first-child,
+.tip p:first-child,
+.warning p:first-child,
+.pro-tip p:first-child,
+.for-managers p:first-child,
+.for-ics p:first-child,
+.common-objection p:first-child {
+  display: inline;
+}
+
+.tldr p,
+.callout p,
+.note p,
+.tip p,
+.warning p,
+.pro-tip p,
+.for-managers p,
+.for-ics p,
+.common-objection p {
+  display: block;
+  margin-bottom: 0.5em;
+}
+
+.tldr p:last-child,
+.callout p:last-child,
+.note p:last-child,
+.tip p:last-child,
+.warning p:last-child,
+.pro-tip p:last-child,
+.for-managers p:last-child,
+.for-ics p:last-child,
+.common-objection p:last-child {
+  margin-bottom: 0;
+}
+
+.tldr p:first-child + p,
+.callout p:first-child + p,
+.note p:first-child + p,
+.tip p:first-child + p,
+.warning p:first-child + p,
+.pro-tip p:first-child + p,
+.for-managers p:first-child + p,
+.for-ics p:first-child + p,
+.common-objection p:first-child + p {
+  margin-top: 0.75em;
+}
+
+/* Copyright page - bottom alignment for EPUB readers
+   EPUB readers don't reliably support viewport units (100vh) or flexbox,
+   so we use padding-top to push content toward the bottom of the page.
+   @media not screen scopes this to EPUB/e-readers only, leaving the
+   web build to use the flex/100vh approach in the @media screen block below. */
+@media not screen {
+  #copyright-page {
+    display: block;
+    min-height: auto;
+    font-size: 0.85em;
+    margin-top: 3em;
+    padding-top: 75%;
+    text-align: center;
+  }
+
+  /* Override Tailwind Typography's .prose max-width and color.
+     Typography sets max-width: 65ch (clips on narrow Kindles) and
+     color: #495057 (washed-out on 16-level e-ink grayscale).
+     strip-page-rules.js removes Typography's descendant rules
+     (.prose X:not(.not-prose)), but the .prose root rule survives. */
+  .prose {
+    max-width: none;
+    color: #000;
+  }
+
+  /* KDP: Use lining numerals in EPUB. Kindle font subsets often lack
+     oldstyle numeral glyphs, causing fallback rendering. Lining nums
+     are more reliable across e-reader font engines. */
+  body {
+    font-variant-numeric: lining-nums proportional-nums;
+  }
+
+  /* EPUB heading font — sans-serif for visual contrast.
+     Sans-serif headings create clear contrast with the serif body text,
+     improving scanability on e-readers. Matches screen heading treatment. */
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: var(--font-heading);
+  }
+
+  /* EPUB heading scale — use em instead of rem.
+     Kindle and older e-readers have inconsistent rem support. Using em
+     ensures headings scale relative to the reader's chosen body font
+     size, preserving the typographic hierarchy across all devices.
+     Every heading level must be >= 1em (body size) so headings never
+     appear smaller than body text. Differentiation at the bottom of
+     the scale (h5/h6) comes from style (uppercase, italic) set in the
+     base layer rather than from size alone.
+
+     Letter-spacing is reset to normal — negative tracking from the base
+     layer can cause cramped rendering on low-DPI e-ink displays. */
+  h1 {
+    font-size: 2em;
+    font-weight: 700;
+    line-height: 1.2;
+    margin-top: 0;
+    margin-bottom: 1em;
+    letter-spacing: normal;
+  }
+
+  /* EPUB chapter headings — start at the top of the page.
+     .level1 already has page-break-before: always, so the heading appears
+     on a fresh screen. Zero out the drop spacing that makes sense for print
+     chapter openers but wastes precious screen real estate on e-readers. */
+  .level1 > h1 {
+    margin-top: 0;
+    padding-top: 0;
+  }
+
+  /* Also remove the generic h1 padding-top that creates a "drop" effect.
+     In print this is a traditional typographic convention; in EPUB it just
+     pushes the heading halfway down the small e-reader screen. */
+  h1:not(.title) {
+    padding-top: 0;
+  }
+
+  h2 {
+    font-size: 1.5em;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 2em;
+    margin-bottom: 0.6em;
+    letter-spacing: normal;
+  }
+
+  h3 {
+    font-size: 1.25em;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 1.5em;
+    margin-bottom: 0.4em;
+    letter-spacing: normal;
+  }
+
+  h4 {
+    font-size: 1.1em;
+    font-weight: 600;
+    line-height: 1.2;
+    margin-top: 1.2em;
+    margin-bottom: 0.3em;
+  }
+
+  h5 {
+    font-size: 1.05em;
+    margin-top: 1em;
+    margin-bottom: 0.2em;
+  }
+  h6 {
+    font-size: 1em;
+    margin-top: 1em;
+    margin-bottom: 0.2em;
+  }
+
+  /* Override light font weights (300) for e-ink readability.
+     Many Kindle models only support weights 400 and 700. Weight 300
+     renders identically to 400 on e-ink, making the design intent
+     invisible. Use 400 (normal) instead of 300 (light). */
+  .subtitle,
+  .lead,
+  section.section-opener > p,
+  section.section-opener > ul,
+  section.section-opener > ol {
+    font-weight: 400;
+  }
+
+  /* Override muted gray text for e-ink contrast.
+     E-ink displays use 16-level grayscale, so #555–#6c757d appears
+     washed out. Use near-black for reliable readability on Kindle.
+     #333 was still too light on e-ink — use #111 for strong contrast. */
+  .lead,
+  section.section-opener > p,
+  section.section-opener > ul,
+  section.section-opener > ol {
+    color: #111;
+  }
+
+  p.subtitle {
+    color: #444;
+  }
+
+  figcaption {
+    color: #444;
+  }
+
+  blockquote {
+    color: #333;
+  }
+
+  /* Small caps for EPUB — Kindle (and many e-readers) ignore both
+     font-variant-caps and OpenType smcp/c2sc, so all-small-caps is a no-op
+     there. Because every .smallcaps span holds an all-uppercase acronym, the
+     unstyled result is full-height capitals slightly LARGER than the
+     surrounding text — the opposite of small caps. Fake it with a font-size
+     reduction, which every reader honors: shrinking uppercase letters reads
+     as small caps. Explicitly reset font-variant-caps/font-feature-settings
+     so readers that DO support them don't scale the glyphs a second time.
+     (The print/PDF path uses real OpenType small caps via the @media print
+     rule, whose !important declarations override this.) */
+  span.smallcaps {
+    font-variant-caps: normal;
+    font-feature-settings: normal;
+    font-size: 0.82em;
+    letter-spacing: 0.05em;
+  }
+
+  /* Callout emoji images — sized in em so they stay within the text
+     line box. A fixed px height taller than the reader's line box makes
+     Kindle inflate the leading of the entire first paragraph (the one
+     carrying the label), so it reads looser than the paragraphs below it.
+     Keeping the glyph at ~1em with a small negative vertical-align lets
+     it sit on the label's baseline without growing the line. */
+  img.callout-emoji {
+    width: 0.9em;
+    height: 0.9em;
+    vertical-align: -0.1em;
+  }
+
+  /* Kindle emoji PNGs are transparent RGBA (see composite-kindle-emoji.py), so
+     they sit cleanly on any reading background — no per-callout background-bake
+     is applied. Keep emoji backgrounds explicitly transparent so nothing draws
+     a box behind them in any callout or in body text. */
+  img.callout-emoji,
+  img.emoji {
+    background-color: transparent !important;
+    background: transparent !important;
+  }
+
+  /* E-ink table readability — e-ink displays use 16-level grayscale,
+     so light borders (#ddd) and zebra stripes (#f8f8f8) can disappear.
+     Darken both for reliable visibility on Kindle and similar devices. */
+  table th,
+  table td {
+    border-bottom-color: #bbb;
+  }
+
+  table tbody tr:nth-child(even) {
+    background-color: #ddd;
+  }
+
+  /* Prose content spacing — replaces Tailwind Typography's .prose-scoped
+     rules that are stripped from EPUB by strip-page-rules.js. These provide
+     the vertical rhythm and list formatting that Typography previously
+     generated as .prose X:not(.not-prose) selectors. Bare element selectors
+     are sufficient since Typography's competing rules are removed. */
+  p {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+  }
+
+  ol {
+    list-style-type: decimal;
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    padding-left: 1.625em;
+  }
+
+  ul {
+    list-style-type: disc;
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+    padding-left: 1.625em;
+  }
+
+  li {
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
+  }
+
+  ol > li,
+  ul > li {
+    padding-left: 0.375em;
+  }
+
+  ul ul,
+  ul ol,
+  ol ul,
+  ol ol {
+    margin-top: 0.75em;
+    margin-bottom: 0.75em;
+  }
+
+  dl {
+    margin-top: 1.25em;
+    margin-bottom: 1.25em;
+  }
+
+  dt {
+    font-weight: 600;
+  }
+
+  dd {
+    margin-top: 0.5em;
+    padding-left: 1.625em;
+  }
+
+  figure {
+    margin-top: 2em;
+    margin-bottom: 2em;
+  }
+
+  figure > * {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+
+  img {
+    margin-top: 2em;
+    margin-bottom: 2em;
+  }
+
+  /* Collapse margin after headings and horizontal rules so the first
+     element following a heading sits flush against it. */
+  h2 + *,
+  h3 + *,
+  h4 + * {
+    margin-top: 0;
+  }
+
+  hr + * {
+    margin-top: 0;
+  }
+
+  /* Link styling for EPUB — underline with controlled thickness.
+     E-ink renders blue as gray, making color-only distinction unreliable. */
+  a {
+    text-decoration: underline;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.15em;
+  }
+
+  /* Blockquote border and padding for EPUB. */
+  blockquote {
+    border-left: 3px solid #999;
+    padding-left: 1.25em;
+  }
+
+  /* Code: override Tailwind Typography bold (font-weight: 600) which
+     is stripped along with the rest of Typography's .prose rules. */
+  code {
+    font-weight: normal;
+  }
+}
+
+/* Tables — booktabs style to match PDF.
+   0.95em is more readable than 0.9em on 6" e-ink screens where
+   overflow-wrap: break-word already causes aggressive line wrapping. */
+table {
+  font-size: 0.95em;
+  width: 100%;
+  border-collapse: collapse;
+  page-break-inside: avoid;
+  margin: 1.5em 0;
+  border-top: 2px solid #333;
+  border-bottom: 2px solid #333;
+}
+
+table th,
+table td {
+  padding: 0.4em 0.6em;
+  border: none;
+  border-bottom: 1px solid #ddd;
+  text-align: left;
+  vertical-align: top;
+  font-variant-numeric: lining-nums tabular-nums;
+  /* Prevent long URLs or text from overflowing on narrow e-reader screens */
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+table th {
+  font-weight: 600;
+  border-bottom: 2px solid #333;
+  background-color: transparent;
+}
+
+table tbody tr:last-child td {
+  border-bottom: none;
+}
+
+/* Code blocks — light theme for e-reader compatibility.
+   0.9em is the minimum readable size on 6" e-ink displays;
+   0.85em becomes ~8.5pt at default body size, straining older Kindles. */
+pre {
+  font-size: 0.9em;
+  line-height: 1.45;
+  padding: 1em 1.25em;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+  page-break-inside: avoid;
+  background-color: #f8f8f8;
+  color: #1a1a1a;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+code {
+  font-size: 0.9em;
+  padding: 0.15em 0.35em;
+  background-color: #f5f5f5;
+  border: 1px solid #e0e0e0;
+  border-radius: 3px;
+  overflow-wrap: break-word;
+  color: #333;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+
+pre code {
+  padding: 0;
+  background-color: transparent;
+  border: none;
+  color: inherit;
+}
+
+/* Kindle line-box fixes (e-readers only). Placed after the shared top-level
+   `code` rule above so it wins on source order, and scoped to @media not
+   screen so the PDF/print and web builds keep their inline-code borders. */
+@media not screen {
+  /* Inline code: Kindle inflates the leading of any line carrying an inline
+     element taller than the surrounding text, so a line with inline `code`
+     reads looser than its neighbors. Per spec, vertical padding/border on an
+     inline element shouldn't change line height — Kindle ignores that. Drop
+     the border and vertical padding (keep the background tint + horizontal
+     padding for distinction) so inline code stays inside the line box. The
+     more-specific `pre code` rule above keeps block code unaffected. */
+  code {
+    border: none;
+    padding: 0 0.3em;
+  }
+
+  /* Uniform line spacing inside callouts: the first paragraph is
+     display:inline (so the injected label flows onto its first line) and
+     takes the reader-controlled line-height, while the block paragraphs
+     below are pinned to 1.5 by the components layer — so on readers with
+     looser spacing the first paragraph reads looser than the rest. Let every
+     callout paragraph track the reader's line-height instead. */
+  .tldr p,
+  .callout p,
+  .note p,
+  .tip p,
+  .warning p,
+  .pro-tip p,
+  .for-managers p,
+  .for-ics p,
+  .common-objection p {
+    line-height: inherit;
+  }
+}
+
+/* Blockquotes — elegant style to match PDF */
+blockquote {
+  margin: 1.25em 1em 1.25em 1.5em;
+  padding: 0 0 0 1em;
+  border-left: 2px solid #aaa;
+  background-color: transparent;
+  font-style: italic;
+  font-size: 0.95em;
+  line-height: 1.5;
+  page-break-inside: avoid;
+  color: #444;
+}
+
+blockquote p {
+  margin: 0.5em 0;
+}
+
+blockquote p:first-child {
+  margin-top: 0;
+}
+
+blockquote p:last-child {
+  margin-bottom: 0;
+}
+
+/* Lists - improve spacing and ensure bullets/numbers display.
+   Tailwind's preflight reset sets list-style:none on all lists.
+   In HTML, the prose typography plugin overrides this via @layer,
+   but EPUB readers may not support complex selectors or layers,
+   so we set list-style-type explicitly here as a reliable fallback. */
+ul {
+  list-style-type: disc;
+}
+
+ol {
+  list-style-type: decimal;
+}
+
+ul,
+ol {
+  margin: 1em 0;
+  padding-left: 2em;
+}
+
+li {
+  margin-bottom: 0.4em;
+  line-height: 1.55;
+}
+
+li p {
+  margin: 0.25em 0;
+}
+
+/* Nested lists — tighter spacing, progressive indentation */
+li ul,
+li ol {
+  margin-top: 0.5em;
+  padding-left: 1.5em;
+}
+
+/* Images - responsive sizing */
+img {
+  max-width: 100%;
+  height: auto;
+  page-break-inside: avoid;
+}
+
+/* Section breaks — subtle centered ornament */
+hr {
+  border: none;
+  height: auto;
+  width: auto;
+  background: none;
+  margin: 2.5em auto;
+  text-align: center;
+  page-break-after: avoid;
+}
+
+hr::after {
+  content: "⁕   ⁕   ⁕";
+  display: block;
+  /* #555 instead of #999 — visible on e-ink 16-level grayscale */
+  color: #555;
+  font-size: 0.9em;
+  letter-spacing: 0.15em;
+}
+
+figure {
+  margin: 1.5em 0;
+  page-break-inside: avoid;
+}
+
+figcaption {
+  font-size: 0.9em;
+  font-style: italic;
+  text-align: center;
+  margin-top: 0.5em;
+  /* #595959 provides 7:1 contrast ratio against white background (WCAG AAA) */
+  color: #595959;
+}
+
+/* Footnotes - compact formatting */
+.footnotes {
+  font-size: 0.85em;
+  margin-top: 2em;
+  padding-top: 1em;
+  border-top: 1px solid #ccc;
+}
+
+.footnotes ol {
+  padding-left: 1.5em;
+}
+
+.footnotes li {
+  margin-bottom: 0.5em;
+  break-inside: avoid;
+}
+
+/* Footnote paragraphs inherit the base EPUB `p` margins (1.25em top and
+   bottom), which on Kindle pushes every note far apart and reads as
+   double-spaced. Collapse those margins so each note is a tight block,
+   with `.footnotes li` providing the only gap between entries. */
+.footnotes li p {
+  margin-top: 0;
+  margin-bottom: 0;
+}
+
+/* Footnote reference markers — Kindle converts all external links to
+   footnotes, so readers encounter them frequently.
+   0.85em keeps markers clearly visible on e-ink without disrupting
+   line spacing.
+   EPUB footnote refs are plain <a> elements (no <sup> wrapper), so
+   target .footnote-ref directly. Use vertical-align: super for true
+   superscript — position: relative + top: -0.4em (from the base layer)
+   is unreliable on Kindle's inline layout engine. */
+.footnote-ref {
+  font-size: 0.85em;
+  line-height: 1;
+  vertical-align: super;
+  font-variant-numeric: lining-nums;
+  /* Cancel the base-layer position: relative + top: -0.4em hack —
+     vertical-align: super handles superscript natively on EPUB readers. */
+  position: static;
+  top: auto;
+}
+
+/* Links - elegant and accessible.
+   Solid underline color — rgba/alpha is invisible on e-ink grayscale. */
+a {
+  color: #0369a1;
+  text-decoration: underline;
+  text-decoration-color: #0369a1;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
+/* Title page — refined typography to match PDF quality. */
+.title {
+  font-family: var(--font-heading);
+  font-size: 2.2em;
+  font-weight: 700;
+  text-align: center;
+  margin-top: 2em;
+  margin-bottom: 0.5em;
+  letter-spacing: -0.02em;
+  line-height: 1.15;
+  padding-top: 0.75rem;
+  border-top: 2px solid #333;
+}
+
+.subtitle {
+  font-family: var(--font-heading);
+  font-size: 1.1em;
+  font-weight: 400;
+  font-style: italic;
+  text-align: center;
+  margin-bottom: 2em;
+  line-height: 1.5;
+  color: #555;
+  padding-bottom: 0.75rem;
+  border-bottom: 2px solid #333;
+}
+
+.author {
+  font-family: var(--font-heading);
+  font-size: 1.1em;
+  font-weight: 500;
+  text-align: center;
+  margin-bottom: 0.5em;
+  letter-spacing: 0.04em;
+}
+
+/* Copyright page - bottom aligned */
+#copyright-page {
+  font-size: 0.85em;
+}
+
+/* Screen-only: use flex to push copyright content to bottom of viewport */
+@media screen {
+  #copyright-page {
+    display: flex;
+    align-items: flex-end;
+    min-height: 100vh;
+  }
+}
+
+/* Dedication — centered and styled */
+.dedication {
+  text-align: center;
+  font-style: italic;
+  margin: 4em 2em;
+  font-size: 1.1em;
+  line-height: 1.65;
+  color: #555;
+}
+
+/* Publisher line on title page */
+.publisher {
+  font-size: 0.9em;
+  text-align: center;
+  color: #555; /* ~7.5:1 contrast — readable on e-ink sepia */
+  margin-top: 1em;
+}
+
+/* Revision number (small, muted) */
+.revision {
+  font-size: 0.8em;
+  text-align: center;
+  color: #666; /* ~5.7:1 contrast — passes WCAG AA on sepia */
+  margin-top: 0.5em;
+}

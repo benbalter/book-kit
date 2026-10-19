@@ -1,0 +1,67 @@
+# Publish book-kit to npm (with provenance) when a v* tag is pushed, then
+# move the floating tag that `uses: benbalter/book-kit/...@<tag>` follows:
+# vMAJOR from 1.0 on, and vMAJOR.MINOR before it (under semver any 0.x minor
+# release may break, so v0.1 must not silently become 0.2). The tag must match
+# package.json's version; tests/release.test.js keeps the kit's own @ refs in
+# step with it.
+name: Release
+
+on:
+  push:
+    tags: ['v*.*.*']
+
+permissions:
+  contents: write
+  id-token: write # npm trusted publishing and provenance
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Check the tag matches package.json
+        run: |
+          version="$(jq -r .version package.json)"
+          [ "v$version" = "$GITHUB_REF_NAME" ] || { echo "::error::Tag $GITHUB_REF_NAME doesn't match package.json version $version"; exit 1; }
+      # Same toolchain as ci.yml's test job (the Lua filter and emoji tests need
+      # pandoc and Pillow).
+      - uses: ./actions/setup-book-kit
+        with:
+          kindle: 'true'
+      - run: npm test
+      # Trusted publishing (OIDC) needs no token. NPM_TOKEN covers a package
+      # with no trusted publisher configured yet, such as its first release.
+      # A rerun skips a version this commit already published, so a failure
+      # after this step can be retried without npm refusing the duplicate. A
+      # version published from any other commit fails the release instead, so
+      # the floating tag never moves onto a package this run didn't verify.
+      - name: Publish to npm
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          name="$(jq -r .name package.json)"
+          version="$(jq -r .version package.json)"
+          if npm view "$name@$version" version >/dev/null 2>&1; then
+            published="$(npm view "$name@$version" gitHead 2>/dev/null || true)"
+            if [ "$published" = "$GITHUB_SHA" ]; then
+              echo "$name@$version is already on npm from $GITHUB_SHA; skipping publish"
+              exit 0
+            fi
+            echo "::error::$name@$version is already on npm from commit '${published:-unknown}', not $GITHUB_SHA"
+            exit 1
+          fi
+          if [ -n "$NODE_AUTH_TOKEN" ]; then
+            # Literal ${NODE_AUTH_TOKEN}: npm expands it, so the token never lands in .npmrc.
+            # shellcheck disable=SC2016
+            npm config set //registry.npmjs.org/:_authToken '${NODE_AUTH_TOKEN}'
+          fi
+          npm publish
+      - name: Move the floating tag
+        run: |
+          version="${GITHUB_REF_NAME#v}"
+          major="${version%%.*}"
+          rest="${version#*.}"
+          minor="${rest%%.*}"
+          if [ "$major" = "0" ]; then floating="v0.${minor}"; else floating="v${major}"; fi
+          git tag -f "$floating"
+          git push -f origin "refs/tags/$floating"

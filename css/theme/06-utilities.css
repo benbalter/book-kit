@@ -1,0 +1,40 @@
+/* ============================================
+   UTILITIES LAYER - Custom Utility Classes
+   ============================================ */
+@layer utilities {
+  /* Book Typography Utilities */
+  .book-justified {
+    text-align: justify;
+    hyphens: auto;
+    -webkit-hyphens: auto;
+    /* hyphenate-limit-chars: min-word-length (6), min-before-break (3), min-after-break (2) */
+    hyphenate-limit-chars: 6 3 2;
+  }
+
+  .book-ragged {
+    text-align: left;
+    hyphens: manual;
+  }
+
+  .book-small-caps {
+    font-variant-caps: all-small-caps;
+    letter-spacing: 0.05em;
+  }
+
+  .book-no-indent {
+    text-indent: 0;
+  }
+
+  .book-indent {
+    text-indent: 1.5em;
+  }
+
+  /* OpenType feature utility classes */
+  .book-fractions {
+    font-variant-numeric: diagonal-fractions;
+  }
+
+  .book-ordinals {
+    font-feature-settings: "ordn";
+  }
+}

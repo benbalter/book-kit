@@ -1,0 +1,34 @@
+# CLAUDE.md
+
+`book-kit` is build and quality tooling for books written in Markdown: pandoc, WeasyPrint, and Tailwind CSS wired together with [just](https://just.systems) to produce EPUB 3, Kindle EPUB, print PDF, PDF/X-1a, HTML, and DOCX from one source, plus validators and prose linting. Books install it from [npm](https://www.npmjs.com/package/book-kit) and import [`just/book-kit.just`](just/book-kit.just). The [README](README.md) covers book setup, configuration, CI, and parity. This file is about working on the kit itself; the agents in [`claude-plugin/`](claude-plugin/) read each book's own CLAUDE.md, not this one.
+
+## Commands
+
+- `npm ci`, then `npm test` (Vitest over [`tests/`](tests/)). The Lua filter and emoji tests shell out to `pandoc` and to `python3` with Pillow, so run `npm run setup:python` (installs [`requirements.txt`](requirements.txt); a venv is fine) or `kindle-emoji-images.test.js` fails with "Pillow is required".
+- `npm run lint` runs ESLint ([`eslint.config.js`](eslint.config.js)). CI's `lint` job also runs `shellcheck commands/*.sh` and [actionlint](https://github.com/rhysd/actionlint) on the workflows.
+- `cd example && just check-all` runs `book-kit validate`, markdownlint, and textlint on the example book. `just all docx arc` builds every format, which also needs WeasyPrint, Ghostscript, and the exact pandoc in [`toolchain.json`](toolchain.json). The [Dockerfile](docker/Dockerfile) has all of it except Java and EPUBCheck.
+- `claude plugin validate ./claude-plugin` and `claude plugin validate .` check the plugin and the marketplace manifest in [`.claude-plugin/`](.claude-plugin/).
+- [ci.yml](.github/workflows/ci.yml) runs the tests, then builds [`example/`](example/) in every format twice and compares with `book-kit parity` (catching nondeterministic output), and runs EPUBCheck 4.x and 5.x and a Ghostscript PDF/X check.
+
+## Releasing
+
+Bump `version` in [`package.json`](package.json), update the floating `@v0.N` refs in the README and workflows ([`tests/release.test.js`](tests/release.test.js) enforces this), then push a `vX.Y.Z` tag. [release.yml](.github/workflows/release.yml) checks the tag matches `package.json`, publishes to npm with provenance (trusted publishing; an `NPM_TOKEN` secret only until that's configured), and force-moves the floating tag: `v0.MINOR` before 1.0, `vMAJOR` after. Books' CI follows that floating tag, so a tag push ships to them. Don't create one without the owner's approval, and push branches with `--no-follow-tags`.
+
+## Architecture
+
+- [`bin/book-kit.js`](bin/book-kit.js): the CLI. It finds the book root (nearest `book.config.yml`), sets `BOOK_ROOT` and `BOOK_KIT_ROOT`, and runs a script from [`commands/`](commands/) by name (`.js`, `.py`, `.sh`; files starting with `_` are helpers, not commands).
+- [`lib/config.js`](lib/config.js): loads `book.config.yml` over [`defaults/book.config.yml`](defaults/book.config.yml), which documents every key, with any [presets](presets/) the book names in `extends` layered in between. [`lib/pandoc.js`](lib/pandoc.js) writes per-format pandoc defaults into `dist/.book-kit/`.
+- [`validators/`](validators/): one module per built-in validator, `{ name, tags, defaults, run(ctx) }`, the same shape as book plugins and preset validators. [`validators/index.js`](validators/index.js) fixes the run order, shared helpers live in [`lib/validate.js`](lib/validate.js), and [`commands/validate.js`](commands/validate.js) is the runner (it re-exports the pre-module API the tests use). A validator tagged `style` must be one the kit defaults turn off; [`tests/validator-modules.test.js`](tests/validator-modules.test.js) checks.
+- [`just/book-kit.just`](just/book-kit.just): every build recipe. Books override a step by defining a recipe with the same name (`set allow-duplicate-recipes`).
+- [`filters/`](filters/) (Lua, for pandoc), [`templates/`](templates/), and [`css/theme.css`](css/theme.css) shape output. The theme imports its sections from [`css/theme/`](css/theme/) in cascade order; keep that order, since moving a rule between files can change which one wins. [`rules/`](rules/) holds custom textlint rules; [`configs/`](configs/) holds the mechanical base markdownlint and textlint configs. [`lib/lint.js`](lib/lint.js) merges them with `lint.*` from presets and the book into `dist/.book-kit/`, for `book-kit prose`, `book-kit markdownlint`, and the Claude chapter hook. textlint gives `--rulesdir` rules no config, so each enabled kit rule gets a generated wrapper with its options baked in.
+- [`actions/`](actions/) has the composite actions (`setup-book-kit`, `epubcheck`) used by the kit's CI and by the reusable [build.yml](.github/workflows/build.yml) and [parity.yml](.github/workflows/parity.yml) that books call.
+
+## Gotchas
+
+- [`toolchain.json`](toolchain.json) is the single source of truth for tool versions. [`tests/toolchain.test.js`](tests/toolchain.test.js) fails if `requirements.txt`, the Dockerfile, or the actions disagree with it. pandoc and WeasyPrint bumps can reflow a book's locked print page count, so bump them deliberately.
+- The kit never ships font binaries (OFL Reserved Font Name; see [NOTICE.md](NOTICE.md)). [`commands/fonts.py`](commands/fonts.py) builds them from the upstream files pinned in `toolchain.json` with [`fonts/recipe.json`](fonts/recipe.json), into `~/.cache/book-kit`, and `_setup` links them into the book. The recipe reproduces the theme's original subsets in glyphs, metrics, and names; a real book's print PDF rendered identically page for page. Recheck a locked page count before changing either.
+- [`tests/privacy.test.js`](tests/privacy.test.js) scans every tracked and untracked file for a specific book's data (titles, ISBN prefixes, imprint names) and credentials, because the kit is meant to be open-sourced. Keep book-specific examples generic, here and in fixtures.
+- Output must be deterministic: CI rebuilds and diffs every format, and `parity.yml` exists so kit and toolchain upgrades can prove they don't change a book.
+- `overrides` in `package.json` are scoped to the parent that holds each vulnerable transitive dependency back (`smol-toml`, `katex`, `postcss-selector-parser`). The semver-major jumps were checked by confirming the example's CSS output stayed byte-identical; repeat that check if you touch them.
+- Renovate extends the owner's shared preset ([`local>benbalter/renovate-config`](https://github.com/benbalter/renovate-config)).
+- [`tests/privacy-scan.js`](tests/privacy-scan.js) also reads terms from `BOOK_KIT_PRIVACY_TERMS` (a CI secret), for phrases too short to ship even as hashes. Set it in your shell to run the full scan locally.

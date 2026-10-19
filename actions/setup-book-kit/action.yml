@@ -1,0 +1,148 @@
+name: Set up book-kit
+description: >
+  Install the book-kit toolchain (Node, the book's npm dependencies, just,
+  pandoc, Python with fontTools, and optionally WeasyPrint, Ghostscript, and
+  Vale) at the versions in toolchain.json, and cache the fonts `book-kit
+  fonts` builds. When the book has installed book-kit,
+  its toolchain.json wins, so the book's lockfile pins pandoc and WeasyPrint
+  along with the kit version; a floating action tag can't drift them.
+
+inputs:
+  working-directory:
+    description: Directory holding the book's package.json and book.config.yml
+    default: .
+  token:
+    description: Exposed to npm ci as NODE_AUTH_TOKEN, for a book whose .npmrc installs private packages
+    default: ${{ github.token }}
+  print:
+    description: Install WeasyPrint, Pillow, emoji fonts (PDF builds)
+    default: 'false'
+  pdfx:
+    description: Install Ghostscript and pikepdf (PDF/X-1a conversion)
+    default: 'false'
+  kindle:
+    description: Install Pillow (Kindle emoji compositing)
+    default: 'false'
+  vale:
+    description: Install Vale (prose linting)
+    default: 'false'
+
+runs:
+  using: composite
+  steps:
+    - name: Read Node version
+      id: node
+      shell: bash
+      run: echo "version=$(jq -r .node '${{ github.action_path }}/../../toolchain.json')" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/setup-node@v7
+      with:
+        node-version: ${{ steps.node.outputs.version }}
+        cache: npm
+        cache-dependency-path: ${{ inputs.working-directory }}/package-lock.json
+
+    - name: Install npm dependencies
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      env:
+        NODE_AUTH_TOKEN: ${{ inputs.token }}
+      run: npm ci --no-audit --no-fund
+
+    - name: Resolve toolchain
+      id: tc
+      shell: bash
+      working-directory: ${{ inputs.working-directory }}
+      run: |
+        set -euo pipefail
+        tc=node_modules/book-kit/toolchain.json
+        [ -f "$tc" ] || tc='${{ github.action_path }}/../../toolchain.json'
+        kit="$(cd "$(dirname "$tc")" && pwd)"
+        echo "Using toolchain from $tc"
+        {
+          echo "kit=$kit"
+          echo "pandoc=$(jq -r .pandoc "$tc")"
+          echo "just=$(jq -r .just "$tc")"
+          echo "vale=$(jq -r .vale "$tc")"
+        } >> "$GITHUB_OUTPUT"
+
+    - uses: extractions/setup-just@v4
+      with:
+        just-version: ${{ steps.tc.outputs.just }}
+
+    - name: Install pandoc ${{ steps.tc.outputs.pandoc }}
+      shell: bash
+      run: |
+        set -euo pipefail
+        version='${{ steps.tc.outputs.pandoc }}'
+        deb="pandoc-${version}-1-amd64.deb"
+        curl -fsSL --retry 3 -o "$RUNNER_TEMP/$deb" "https://github.com/jgm/pandoc/releases/download/${version}/${deb}"
+        sudo dpkg -i "$RUNNER_TEMP/$deb"
+        installed="$(pandoc --version | head -1)"
+        case "$installed" in
+          "pandoc ${version}"*) echo "$installed" ;;
+          *) echo "::error::Expected pandoc ${version} but got '${installed}'"; exit 1 ;;
+        esac
+
+    - name: Install system packages
+      if: inputs.print == 'true' || inputs.pdfx == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        pkgs=()
+        [ '${{ inputs.print }}' = 'true' ] && pkgs+=(fonts-noto-color-emoji)
+        [ '${{ inputs.pdfx }}' = 'true' ] && pkgs+=(ghostscript poppler-utils)
+        sudo apt-get update -o Acquire::Retries=3
+        sudo apt-get install -y --no-install-recommends "${pkgs[@]}"
+
+    # Every build needs Python: `book-kit fonts` subsets the theme's fonts
+    # with fontTools.
+    - uses: actions/setup-python@v7
+      with:
+        python-version: '3.12'
+
+    - name: Install Python packages
+      shell: bash
+      run: |
+        set -euo pipefail
+        kit='${{ steps.tc.outputs.kit }}'
+        req="$kit/requirements.txt"
+        want=()
+        # Kits that build their fonts (0.3.5+) need fontTools; the floating
+        # action tag also runs for books whose lockfile pins an older kit.
+        [ -f "$kit/fonts/recipe.json" ] && want+=(fonttools brotli)
+        [ '${{ inputs.print }}' = 'true' ] && want+=(weasyprint Pillow)
+        [ '${{ inputs.kindle }}' = 'true' ] && want+=(Pillow)
+        [ '${{ inputs.pdfx }}' = 'true' ] && want+=(pikepdf)
+        [ "${#want[@]}" -gt 0 ] || exit 0
+        pins=()
+        for pkg in $(printf '%s\n' "${want[@]}" | sort -u); do
+          pins+=("$(grep -iE "^${pkg}==" "$req")")
+        done
+        python -m pip install --disable-pip-version-check "${pins[@]}"
+
+    # The fonts `book-kit fonts` builds from the pinned upstream releases,
+    # keyed on everything that determines them.
+    - name: Locate the font cache
+      id: fonts
+      shell: bash
+      run: |
+        set -euo pipefail
+        kit='${{ steps.tc.outputs.kit }}'
+        [ -f "$kit/fonts/recipe.json" ] || exit 0
+        echo "dir=$HOME/.cache/book-kit" >> "$GITHUB_OUTPUT"
+        echo "key=book-kit-fonts-$(cat "$kit/fonts/recipe.json" "$kit/toolchain.json" "$kit/requirements.txt" | sha256sum | cut -c1-16)" >> "$GITHUB_OUTPUT"
+
+    - uses: actions/cache@v6
+      if: steps.fonts.outputs.key != ''
+      with:
+        path: ${{ steps.fonts.outputs.dir }}
+        key: ${{ steps.fonts.outputs.key }}
+
+    - name: Install Vale ${{ steps.tc.outputs.vale }}
+      if: inputs.vale == 'true'
+      shell: bash
+      run: |
+        set -euo pipefail
+        v='${{ steps.tc.outputs.vale }}'
+        curl -fsSL --retry 3 "https://github.com/errata-ai/vale/releases/download/v${v}/vale_${v}_Linux_64-bit.tar.gz" | sudo tar -xz -C /usr/local/bin vale
+        vale --version

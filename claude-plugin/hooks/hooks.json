@@ -1,0 +1,18 @@
+{
+  "description": "After a chapter edit, run markdownlint, book-kit validate, and textlint on it",
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"${CLAUDE_PLUGIN_ROOT}/hooks/validate-chapter.js\"",
+            "timeout": 60,
+            "statusMessage": "Checking chapter…"
+          }
+        ]
+      }
+    ]
+  }
+}

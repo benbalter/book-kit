@@ -1,0 +1,20 @@
+# Fixture book for unit tests (tests/setup.js points BOOK_ROOT here). It
+# extends the house-style preset so the tests exercise every validator and
+# callout.
+extends: business-nonfiction
+metadata:
+  title: Fixture Book
+  publisher: Example Press
+  uuid: 00000000-0000-4000-8000-000000000000
+accessibility:
+  summary: This publication conforms to WCAG 2.1 Level AA. It is well-structured with a logical reading order, navigable table of contents, and uses semantic markup throughout. All content is text-based.
+  conforms_to: EPUB Accessibility 1.1 - WCAG 2.1 Level AA
+  conformance_url: https://example.com/accessibility/
+emoji:
+  kindle_dir: img/emoji-kindle/
+  pdf_callout_dir: ../img/emoji-print-callout/
+  pdf_body_dir: ../img/emoji-print-body/
+structure:
+  start_reading: introduction
+lint:
+  acronyms: [ZQX]

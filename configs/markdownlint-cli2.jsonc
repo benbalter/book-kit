@@ -1,0 +1,98 @@
+// book-kit's base markdownlint config. The build merges lint.markdownlint
+// from book.config.yml (and its presets) into `config` (lib/lint.js); a book
+// with its own .markdownlint-cli2.jsonc uses that instead.
+{
+  "config": {
+    // Enable all default rules as baseline
+    "default": true,
+
+    // === Line and Formatting Rules ===
+    // Disable line length for prose-heavy content (books need flowing paragraphs)
+    "line-length": false,
+    // Allow chapters to start with H2 (H1 is reserved for book title)
+    "first-line-h1": false,
+
+    // === Heading Rules ===
+    // MD001: Heading levels should increment by one level at a time
+    "heading-increment": true,
+    // MD003: Heading style - use ATX style (hash marks)
+    "heading-style": { "style": "atx" },
+    // MD022: Headings should be surrounded by blank lines
+    "blanks-around-headings": true,
+    // MD024: Allow duplicate headings in different sections (common in books)
+    "no-duplicate-heading": { "siblings_only": true },
+    // MD025: Only one H1 per document (but we use H2 for chapters)
+    "single-h1": false,
+    // MD041: First line doesn't need to be H1 (chapters start with H2)
+    "first-line-heading": false,
+
+    // === List Rules ===
+    // MD004: Use dashes for unordered lists consistently
+    "ul-style": { "style": "dash" },
+    // MD005: Consistent list indentation
+    "list-indent": true,
+    // MD007: Unordered list indentation (2 spaces)
+    "ul-indent": { "indent": 2 },
+    // MD029: Ordered list item prefix (use ordered numbers)
+    "ol-prefix": { "style": "ordered" },
+    // MD030: Spaces after list markers
+    "list-marker-space": true,
+    // MD032: Lists should be surrounded by blank lines
+    "blanks-around-lists": true,
+
+    // === Link and Reference Rules ===
+    // Disable link fragment checking (custom anchor handling)
+    "link-fragments": false,
+    // MD034: Allow bare URLs when appropriate
+    "no-bare-urls": false,
+
+    // === HTML Rules ===
+    // Allow inline HTML for pandoc custom divs and spans
+    "no-inline-html": false,
+
+    // === Code Block Rules ===
+    // MD031: Code blocks should be surrounded by blank lines
+    "blanks-around-fences": true,
+    // MD040: Fenced code blocks should have a language specified
+    "fenced-code-language": false,
+    // MD046: Use fenced code blocks consistently
+    "code-block-style": { "style": "fenced" },
+    // MD048: Use backticks for code fences
+    "code-fence-style": { "style": "backtick" },
+
+    // === Whitespace Rules ===
+    // MD009: No trailing spaces (except for line breaks)
+    "no-trailing-spaces": { "br_spaces": 2 },
+    // MD010: No hard tabs
+    "no-hard-tabs": true,
+    // MD012: No multiple consecutive blank lines
+    "no-multiple-blanks": { "maximum": 1 },
+    // MD027: No multiple spaces after blockquote symbol
+    "no-multiple-space-blockquote": true,
+    // MD047: Files should end with a single newline
+    "single-trailing-newline": true,
+
+    // === Content Rules ===
+    // MD026: No trailing punctuation in headings (except ? for questions)
+    "no-trailing-punctuation": { "punctuation": ".,;:!" },
+    // MD036: No emphasis used as heading
+    "no-emphasis-as-heading": true,
+    // MD037: No spaces inside emphasis markers
+    "no-space-in-emphasis": true,
+    // MD038: No spaces inside code span elements
+    "no-space-in-code": true,
+    // MD039: No spaces inside link text
+    "no-space-in-links": true,
+    // MD045: Images should have alt text for accessibility
+    "no-alt-text": true,
+    // MD049: Use asterisks for emphasis consistently
+    "emphasis-style": { "style": "asterisk" },
+    // MD050: Use asterisks for strong consistently
+    "strong-style": { "style": "asterisk" }
+  },
+  // Ignore generated content (lib/lint.js adds drafts, structure.draft_suffix)
+  "ignores": [
+    "**/node_modules/**",
+    "**/dist/**"
+  ]
+}

@@ -1,0 +1,4 @@
+# The example book's justfile: everything comes from the kit.
+# A book installed from npm imports node_modules/book-kit/just/book-kit.just.
+set allow-duplicate-recipes
+import '../just/book-kit.just'

@@ -1,0 +1,113 @@
+# A fixture shaped like a production book: the house-style preset plus the
+# settings a real book layers on top (its own filter, print-only and web-only
+# pages, emoji kept outside dist/, structural pages matched by prefix, a
+# custom callout, its own textlint config, a renamed PDF/X, a locked page
+# count, and full retail metadata). CI builds it in every format, so a kit
+# change that breaks any of these shows up here before it reaches a book.
+extends: business-nonfiction
+
+output:
+  basename: book
+  pdfx_suffix: -printer
+
+metadata:
+  title: The Complex Example
+  subtitle: A fixture that uses everything a production book does
+  description: A sample book with every configuration a published book tends to need.
+  author: [A. N. Author]
+  lang: en-US
+  publisher: Example Press
+  rights: © 2026 Example Press. All rights reserved.
+  isbn_paperback: 978-0-00-000000-0
+  isbn_ebook: 978-0-00-000001-7
+  pub_date: "2026-01-01"
+  copyright_year: "2026"
+  uuid: 9d1c3b7e-2f4a-4c8e-8a6b-5e0f1d2c3b4a
+  bisac: [REF000000]
+  subjects: ["BISAC: REF000000 - REFERENCE / General", Publishing]
+  keywords: [book tooling, markdown publishing]
+
+accessibility:
+  summary: This publication conforms to WCAG 2.1 Level AA. It is well-structured with a logical reading order, navigable table of contents, and uses semantic markup throughout. All content is text-based.
+  conforms_to: EPUB Accessibility 1.1 - WCAG 2.1 Level AA
+  conformance_url: https://example.com/accessibility/
+
+pandoc_metadata:
+  belongs-to-collection: Example Series
+
+print:
+  page_count: 13
+
+# The preset's six callouts plus one of the book's own (lists replace).
+callouts:
+  - class: tldr
+    label: "TL;DR:"
+    aria: Summary
+  - class: pro-tip
+    label: "Pro-Tip:"
+    aria: Pro tip
+    emoji: "💡"
+    emoji_cp: 1f4a1
+    emoji_alt: light bulb
+  - class: for-managers
+    label: "For managers:"
+    aria: Guidance for managers
+    emoji: "👔"
+    emoji_cp: 1f454
+    emoji_alt: necktie
+    pair_with: for-ics
+  - class: for-ics
+    label: "For individual contributors:"
+    aria: Guidance for individual contributors
+    emoji: "💻"
+    emoji_cp: 1f4bb
+    emoji_alt: laptop
+    pair_with: for-managers
+  - class: common-objection
+    label: "Common objection:"
+    aria: Common objection
+    emoji: "🤔"
+    emoji_cp: 1f914
+    emoji_alt: thinking
+  - class: takeaways
+    aria: Key takeaways
+  - class: exercise
+    label: "Exercise:"
+    aria: Exercise
+
+# Emoji PNGs in the book's own img/, with the generated variants beside them
+# rather than under dist/ (the PDF dirs are relative to dist/).
+emoji:
+  source_dir: img/emoji
+  kindle_dir: img/emoji-kindle/
+  pdf_callout_dir: ../img/emoji-print-callout/
+  pdf_body_dir: ../img/emoji-print-body/
+  # An emoji the kit defaults don't map, added by the book (with its PNG in
+  # source_dir): kept as text on Kindle, an image in print.
+  images:
+    "\u2744\uFE0F": { cp: "2744", alt: snowflake, kindle: false }
+
+structure:
+  start_reading: writing-a-chapter
+  structural_slugs: [copyright, dedication, appendix*]
+
+lint:
+  # The print-only page isn't in index.yml (print_inject adds it to the PDF).
+  exclude: [src/print-only.md]
+  universal_acronyms: [EPUB]
+
+validators:
+  allow:
+    callout-balance: [src/callouts-and-conventions.md]
+  # A fixture's chapters are short by design; tune the thresholds rather than
+  # switching the checks off, so they still run.
+  options:
+    min-opener-length: { min_words: 10 }
+    chapter-lengths: { min_words: 50 }
+
+build:
+  extra_filters:
+    epub: [filters/mark-headings.lua]
+  print_exclude: [web-only.md]
+  print_inject:
+    __PRINT_ONLY_PAGE__: print-only.md

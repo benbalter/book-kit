@@ -1,0 +1,100 @@
+{
+  "name": "book-kit",
+  "version": "0.6.0",
+  "description": "Build and quality tooling for Markdown books: EPUB 3, Kindle, print-ready PDF and PDF/X-1a, HTML, and DOCX from one source, via pandoc, WeasyPrint, and Tailwind CSS.",
+  "license": "MIT",
+  "type": "module",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/benbalter/book-kit.git"
+  },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
+  "bin": {
+    "book-kit": "bin/book-kit.js"
+  },
+  "exports": {
+    "./css/theme.css": "./css/theme.css",
+    "./css/theme/*": "./css/theme/*",
+    "./lib/*": "./lib/*",
+    "./presets/*": "./presets/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "LICENSE",
+    "NOTICE.md",
+    "bin/",
+    "commands/",
+    "configs/",
+    "css/",
+    "defaults/",
+    "emoji/",
+    "filters/",
+    "fonts/*.md",
+    "fonts/recipe.json",
+    "just/",
+    "lib/",
+    "presets/",
+    "profiles/",
+    "requirements.txt",
+    "rules/",
+    "templates/",
+    "toolchain.json",
+    "validators/"
+  ],
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "lint": "eslint .",
+    "setup:python": "python3 -m pip install -r requirements.txt"
+  },
+  "dependencies": {
+    "@tailwindcss/cli": "^4.3.3",
+    "@tailwindcss/typography": "^0.5.20",
+    "@textlint-rule/textlint-rule-no-duplicate-abbr": "1.0.2",
+    "@textlint-rule/textlint-rule-no-unmatched-pair": "2.0.4",
+    "cssnano": "^9.1.0",
+    "js-yaml": "^5.4.1",
+    "markdownlint-cli2": "0.23.3",
+    "postcss": "^8.5.26",
+    "postcss-preset-env": "11.6.1",
+    "sharp": "^0.35.5",
+    "tailwindcss": "^4.3.3",
+    "textlint": "15.8.0",
+    "textlint-filter-rule-comments": "1.3.0",
+    "textlint-rule-abbr-within-parentheses": "1.0.2",
+    "textlint-rule-alex": "5.0.0",
+    "textlint-rule-common-misspellings": "1.0.1",
+    "textlint-rule-diacritics": "2.1.4",
+    "textlint-rule-doubled-spaces": "1.0.2",
+    "textlint-rule-en-capitalization": "2.0.3",
+    "textlint-rule-en-max-word-count": "2.0.1",
+    "textlint-rule-max-comma": "4.0.0",
+    "textlint-rule-no-start-duplicated-conjunction": "2.0.2",
+    "textlint-rule-sentence-length": "5.2.1",
+    "textlint-rule-stop-words": "5.2.0",
+    "textlint-rule-terminology": "5.2.16",
+    "textlint-rule-write-good": "2.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "10.0.1",
+    "eslint": "10.13.0",
+    "globals": "17.13.0",
+    "vitest": "^5.0.2"
+  },
+  "overrides": {
+    "@tailwindcss/typography": {
+      "postcss-selector-parser": "^7.1.6"
+    },
+    "markdownlint-cli2": {
+      "smol-toml": "^1.9.0"
+    },
+    "micromark-extension-math": {
+      "katex": "^0.18.2"
+    }
+  }
+}

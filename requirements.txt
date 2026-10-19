@@ -1,0 +1,14 @@
+# Python build dependencies. Versions must match toolchain.json (the single
+# source of truth); tests/toolchain.test.js enforces it.
+#   weasyprint  - renders the print PDF (drives pagination: bump deliberately)
+#   pikepdf     - PDF/X-1a conversion (convert-pdfx)
+#   Pillow      - emoji compositing (composite-*-emoji)
+#   python-docx - DOCX reference template (generate-reference-docx)
+#   fonttools   - subsets the upstream fonts at build time (book-kit fonts)
+#   brotli      - WOFF2 compression for fonttools
+weasyprint==70.0
+pikepdf==10.10.0
+Pillow==12.3.0
+python-docx==1.2.0
+fonttools==4.67.0
+brotli==1.2.0
