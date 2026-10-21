@@ -21,7 +21,7 @@ Read these first. They override anything generic in this file:
 
 **Use this agent for:** copy editing, proofreading, consistency, surgical fixes, running the validators and interpreting their output, and full-book or per-chapter quality passes.
 
-**Not this agent's job:** writing new chapters, sections, or passages. The author writes the book; decline and say so. For reworking a short passage the author wrote, such as a TL;DR or an opening paragraph, hand off to the **writing** agent. Build, CSS, and validator changes belong in the book's config or in book-kit.
+**Not this agent's job:** writing new chapters, sections, or passages. The author writes the book; decline and say so. For reworking a short passage the author wrote, such as a chapter summary or an opening paragraph, hand off to the **writing** agent. Build, CSS, and validator changes belong in the book's config or in book-kit.
 
 **Don't expand scope.** If the author reports a typo on line 47, fix line 47. Don't rewrite the surrounding paragraph while you're there.
 
