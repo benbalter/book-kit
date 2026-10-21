@@ -49,6 +49,7 @@ Then `just all` builds every format into `dist/`. `just --list` shows each recip
 | `just key-takeaways` | Regenerate each section's key takeaways chapter from its chapters' TL;DRs |
 | `just optimize-images` | Losslessly recompress PNGs under `paths.img` |
 | `just revision` | Print the build stamp (`<version> (<sha>)`) |
+| `just release-files [tag]` | Copy the built formats to version-named files with checksums (see [below](#release-files)) |
 | `just clean` | Remove build output |
 
 ### Requirements
@@ -165,6 +166,10 @@ jobs:
 Underneath it's `book-kit parity BEFORE_DIST AFTER_DIST`. That compares EPUBs and DOCX member by member, the HTML byte for byte, and PDFs by page count, text, fonts, and every page's rendering. It ignores only build timestamps, PNGs re-encoded with identical pixels, and Ghostscript's random font-subset names. The head build must also leave the working tree clean.
 
 Builds take their timestamps from the book's last commit (`SOURCE_DATE_EPOCH`, unless you set it yourself), so rebuilding a commit gives byte-identical EPUBs, DOCX, PDF, and HTML. The PDF/X is the exception: Ghostscript writes its own IDs and dates, which is why parity compares PDFs by rendering rather than bytes.
+
+### Release files
+
+`just release-files v1.2.0` copies the built formats into `dist/release/` under names that carry the version, `<basename>-v1.2.0.epub`, `<basename>-kindle-v1.2.0.epub`, and so on, with a `sha256sum`-compatible `checksums.txt`. A downloaded file then says which release it came from, and `dist/` keeps its plain names for local builds. The version comes from `paths.version`, the same file the build stamps on the copyright page, and a tag that disagrees with it fails, so a file can't be named for one version and stamped with another. Attach `dist/release/*` to your release.
 
 ## Advance reader copies
 
