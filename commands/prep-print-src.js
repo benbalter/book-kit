@@ -7,13 +7,14 @@
  * That rewrite runs on a copy, never on src/:
  *
  *   1. Copy paths.src to dist/.book-kit/print-src/.
- *   2. Convert links to footnotes there.
+ *   2. Convert links to footnotes there. With --link-footnote-urls (Kindle),
+ *      each footnote's URL stays a tappable link.
  *   3. Write dist/.book-kit/print-index.yml: index.yml pointed at the copy,
  *      minus build.print_exclude files. Marker comments listed in
  *      build.print_inject become those files with --inject (PDF) and are
  *      dropped without it (Kindle).
  *
- * Usage: book-kit prep-print-src [--preserve-internal-links] [--inject]
+ * Usage: book-kit prep-print-src [--preserve-internal-links] [--link-footnote-urls] [--inject]
  * Prints the path of the generated index file.
  */
 
@@ -45,6 +46,7 @@ function main(argv) {
   const config = loadConfig();
   const preserveInternal = argv.includes('--preserve-internal-links');
   const includeInjected = argv.includes('--inject');
+  const linkFootnoteUrls = argv.includes('--link-footnote-urls');
 
   const src = pathFor('src', config);
   const work = join(pathFor('dist', config), '.book-kit');
@@ -54,7 +56,7 @@ function main(argv) {
   cpSync(src, printSrc, { recursive: true });
 
   const l2f = fileURLToPath(new URL('./links-to-footnotes.js', import.meta.url));
-  execFileSync('node', [l2f, printSrc, '--no-backup', ...(preserveInternal ? ['--preserve-internal-links'] : [])], {
+  execFileSync('node', [l2f, printSrc, '--no-backup', ...(preserveInternal ? ['--preserve-internal-links'] : []), ...(linkFootnoteUrls ? ['--link-footnote-urls'] : [])], {
     stdio: ['ignore', process.stderr, 'inherit'],
   });
 

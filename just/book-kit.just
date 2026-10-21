@@ -56,12 +56,13 @@ epub: css _strip-css (_prepare "epub")
         {{pandoc_args}} --output {{dist}}/{{name}}.epub
     {{bk}} postprocess-epub {{dist}}/{{name}}.epub
 
-# Kindle-optimized EPUB: static fonts, Twemoji images for e-ink, links as footnotes.
+# Kindle-optimized EPUB: static fonts, Twemoji images for e-ink, links as
+# footnotes whose URLs stay tappable.
 [group('build')]
 kindle: css _strip-css (_prepare "kindle") _emoji
     {{bk}} kindle-fonts
     {{bk}} minify-css {{dist}}/style-epub.css {{dist}}/style-kindle.css
-    {{bk}} prep-print-src --preserve-internal-links >/dev/null
+    {{bk}} prep-print-src --preserve-internal-links --link-footnote-urls >/dev/null
     pandoc --defaults {{kit_defs}}/pandoc-epub.yml --defaults {{kit_defs}}/pandoc-kindle.yml \
         --defaults {{work}}/print-index.yml --defaults {{work}}/pandoc-kindle.yml \
         --metadata kindle=true {{pandoc_args}} --output {{dist}}/{{name}}-kindle.epub

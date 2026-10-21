@@ -473,6 +473,53 @@ describe('links-to-footnotes: footnote definitions', () => {
   });
 });
 
+describe('links-to-footnotes: --link-footnote-urls (Kindle)', () => {
+  it('should make each footnote URL an autolink', () => {
+    const testDir = createTestDir();
+    try {
+      createTestFile(testDir, 'test.md', '## Test\n\nVisit [GitHub](https://github.com) for more.');
+
+      runScript(testDir, ['--no-backup', '--preserve-internal-links', '--link-footnote-urls']);
+
+      const result = readTestFile(testDir, 'test.md');
+      expect(result).toMatch(/Visit GitHub\[\^1\] for more/);
+      expect(result).toMatch(/\[\^1\]: <https:\/\/github\.com>/);
+    } finally {
+      cleanupTestDir(testDir);
+    }
+  });
+
+  it('should autolink the URL of a link inside a footnote definition', () => {
+    const testDir = createTestDir();
+    try {
+      createTestFile(testDir, 'test.md',
+        '## Test\n\nText[^1].\n\n[^1]: See [example](https://example.com) for more.'
+      );
+
+      runScript(testDir, ['--no-backup', '--link-footnote-urls']);
+
+      const result = readTestFile(testDir, 'test.md');
+      expect(result).toMatch(/\[\^1\]: See example \(<https:\/\/example\.com>\) for more/);
+    } finally {
+      cleanupTestDir(testDir);
+    }
+  });
+
+  it('should leave footnote URLs as plain text without the flag (print)', () => {
+    const testDir = createTestDir();
+    try {
+      createTestFile(testDir, 'test.md', '## Test\n\nVisit [GitHub](https://github.com) for more.');
+
+      runScript(testDir, ['--no-backup']);
+
+      const result = readTestFile(testDir, 'test.md');
+      expect(result).not.toMatch(/</);
+    } finally {
+      cleanupTestDir(testDir);
+    }
+  });
+});
+
 describe('links-to-footnotes: backup functionality', () => {
   it('should create backup when not using --no-backup', () => {
     const testDir = createTestDir();
