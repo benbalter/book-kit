@@ -179,7 +179,7 @@ Builds take their timestamps from the book's last commit (`SOURCE_DATE_EPOCH`, u
 
 The repo is also a [Claude Code plugin marketplace](https://code.claude.com/docs/en/plugins/create-marketplace.md). Its `book-kit` plugin ([`claude-plugin/`](claude-plugin/)) adds:
 
-- **`book-kit:writing`**, an agent that drafts new chapters and turns posts or notes into chapters
+- **`book-kit:writing`**, an agent that reworks short passages the author wrote, such as a TL;DR, a section lead, or an opening or closing paragraph, for the author to review. It's built to assist an author, not write for them, so it declines to write chapters, sections, or other new prose
 - **`book-kit:editor`**, an agent that copy edits, proofreads, and runs the validators
 - **A chapter hook**: after Claude edits a chapter, it runs markdownlint and `book-kit validate` and sends errors in that chapter back to Claude to fix. textlint findings come back as advice, since whether they fail depends on the book's phase. It runs the book's installed kit, so checks match the version the book has locked.
 
