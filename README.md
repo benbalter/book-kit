@@ -10,6 +10,9 @@ Build and quality tooling for books written in Markdown. One source, every forma
 
 It's [pandoc](https://pandoc.org), [WeasyPrint](https://weasyprint.org), and [Tailwind CSS](https://tailwindcss.com) wired together with [just](https://just.systems), plus the fixes that make each retailer happy.
 
+> [!NOTE]
+> **Early alpha.** book-kit was extracted from the build for [*Open and Async*](https://open-and-async.com), and it still builds that book's published editions. The extraction isn't finished: some of the book's conventions are still hard-coded in the kit rather than set in config (tracked in [#12](https://github.com/benbalter/book-kit/issues/12)), and config keys and defaults may change between 0.x releases.
+
 ## Quick start
 
 A book is a directory with a `book.config.yml`, an `index.yml` listing chapters in order, and Markdown in `src/`. [`example/`](example/) is a complete one.
