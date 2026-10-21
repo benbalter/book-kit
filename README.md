@@ -222,9 +222,9 @@ Check changes with `claude plugin validate ./claude-plugin` and `claude plugin v
 - `book-kit audit-chapter-lengths` flags chapters much longer or shorter than the rest.
 - `book-kit parity BEFORE_DIST AFTER_DIST` compares two builds (see [Build parity](#build-parity)).
 
-## Upgrading from 0.5
+## Upgrading
 
-0.6 moved from GitHub Packages (`@benbalter/book-kit`) to npm as `book-kit`. Run `npm uninstall @benbalter/book-kit && npm install --save-dev book-kit`, drop the `@benbalter:registry` lines from `.npmrc`, change `@benbalter/book-kit` to `book-kit` in your `justfile` import, `src/style.css`, and any scripts, and move your workflow refs to `@v0.6`. The reusable workflows no longer need `packages: read`, except `parity.yml` on the pull request that makes this move, since its base still installs the old package.
+Each [release's notes](https://github.com/benbalter/book-kit/releases) say what changed and how to upgrade, including [the move to npm in 0.6](https://github.com/benbalter/book-kit/releases/tag/v0.6.0#upgrading-from-05).
 
 ## Versioning
 
