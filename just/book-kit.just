@@ -126,6 +126,13 @@ arc-kindle: kindle
         --metadata kindle=true --metadata arc=true {{pandoc_args}} --output {{dist}}/{{name}}-kindle-arc.epub
     {{bk}} postprocess-epub {{dist}}/{{name}}-kindle-arc.epub
 
+# Release files: copies of the built formats named for the version in
+# <dist>/release/ (book-v1.2.0.epub, book-kindle-v1.2.0.epub, ...) with a
+# checksums.txt. Pass the release tag to fail on a mismatch with VERSION.
+[group('build')]
+release-files tag="":
+    {{bk}} release-files {{ if tag != "" { "--tag " + tag } else { "" } }}
+
 # ─── Validate ───────────────────────────────────────────────────────────────
 
 # Everything a pull request should pass: chapter validators, Markdown lint, prose lint.
