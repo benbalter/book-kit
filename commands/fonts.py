@@ -30,19 +30,28 @@ import zipfile
 # Don't leave a __pycache__ in commands/ (it would ship in the npm package).
 sys.dont_write_bytecode = True
 
-try:
-    import brotli
-    import fontTools
-    from fontTools import subset
-    from fontTools.ttLib import TTFont
-    from fontTools.varLib import instancer
-except ImportError as e:
-    print(
-        f"book-kit fonts: {e.name} is required. Install the kit's Python packages: "
-        "python3 -m pip install -r node_modules/book-kit/requirements.txt",
-        file=sys.stderr,
-    )
-    sys.exit(1)
+
+def require_font_tools():
+    """Import fontTools and brotli, which only building the fonts needs.
+
+    Imported here rather than at the top so a book that brings its own fonts
+    directory doesn't need either package installed.
+    """
+    global brotli, fontTools, subset, TTFont, instancer
+    try:
+        import brotli
+        import fontTools
+        from fontTools import subset
+        from fontTools.ttLib import TTFont
+        from fontTools.varLib import instancer
+    except ImportError as e:
+        print(
+            f"book-kit fonts: {e.name} is required. Install the kit's Python packages: "
+            "python3 -m pip install -r node_modules/book-kit/requirements.txt",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
 
 KIT = os.environ.get("BOOK_KIT_ROOT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -161,6 +170,7 @@ def main():
     root = cache_root()
     if link_path and (os.path.lexists(link_path) and not kit_link(link_path, root)):
         return  # The book's own fonts: don't build or touch anything.
+    require_font_tools()
 
     with open(os.path.join(KIT, "fonts", "recipe.json"), "rb") as f:
         recipe_bytes = f.read()
