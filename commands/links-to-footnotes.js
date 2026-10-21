@@ -31,10 +31,13 @@ class LinksToFootnotes {
   // Regex pattern for any trailing heading attribute block, e.g., "{.class}" or "{epub:type=appendix}"
   static HEADING_ATTR_PATTERN = /\s\{[^}]+\}\s*$/;
 
-  constructor(srcDirectory, createBackup = true, preserveInternalLinks = false) {
+  constructor(srcDirectory, createBackup = true, preserveInternalLinks = false, linkFootnoteUrls = false) {
     this.srcDirectory = srcDirectory;
     this.createBackup = createBackup;
     this.preserveInternalLinks = preserveInternalLinks;
+    // E-readers can follow a link in a footnote, so the Kindle build keeps the
+    // URLs there clickable; print gets plain text, since paper can't.
+    this.linkFootnoteUrls = linkFootnoteUrls;
     this.globalFootnoteCounter = 1;
     this.anchorMap = {};
   }
@@ -160,6 +163,12 @@ class LinksToFootnotes {
       .replace(/^-|-$/g, '');    // Remove leading/trailing hyphens
   }
 
+  // A footnote's URL: an autolink when the reader can tap it, else plain text.
+  // Pandoc's Markdown doesn't autolink bare URLs, so plain text stays plain.
+  formatFootnoteUrl(url) {
+    return this.linkFootnoteUrls ? `<${url}>` : url;
+  }
+
   internalLink(url) {
     return url.startsWith('#');
   }
@@ -222,7 +231,7 @@ class LinksToFootnotes {
           
           // Convert all links to parentheticals in footnotes
           parentheticalCount++;
-          return `${linkText} (${url})${trailingPunct}`;
+          return `${linkText} (${this.formatFootnoteUrl(url)})${trailingPunct}`;
         });
       } else {
         // Mask inline code spans so links inside them aren't converted.
@@ -290,7 +299,7 @@ class LinksToFootnotes {
       // Add footnotes at the end
       newContent += '\n\n';
       for (const footnote of footnotes) {
-        newContent += `[^${footnote.id}]: ${footnote.url}\n`;
+        newContent += `[^${footnote.id}]: ${this.formatFootnoteUrl(footnote.url)}\n`;
       }
     }
     
@@ -314,11 +323,12 @@ if (isMain(import.meta.url)) {
   (async () => {
     const args = process.argv.slice(2);
     
-    if (args.length < 1 || args.length > 3) {
-      console.error(`Usage: ${path.basename(process.argv[1])} <source_directory> [--no-backup] [--preserve-internal-links]`);
+    if (args.length < 1 || args.length > 4) {
+      console.error(`Usage: ${path.basename(process.argv[1])} <source_directory> [--no-backup] [--preserve-internal-links] [--link-footnote-urls]`);
       console.error(`Example: ${path.basename(process.argv[1])} src`);
       console.error(`Example: ${path.basename(process.argv[1])} src --no-backup`);
       console.error(`Example: ${path.basename(process.argv[1])} src --no-backup --preserve-internal-links`);
+      console.error(`Example: ${path.basename(process.argv[1])} src --no-backup --preserve-internal-links --link-footnote-urls`);
       process.exit(1);
     }
 
@@ -326,6 +336,7 @@ if (isMain(import.meta.url)) {
     const flags = args.slice(1);
     const createBackup = !flags.includes('--no-backup');
     const preserveInternalLinks = flags.includes('--preserve-internal-links');
+    const linkFootnoteUrls = flags.includes('--link-footnote-urls');
 
     if (!fs.existsSync(srcDirectory)) {
       console.error(`Error: Directory '${srcDirectory}' does not exist`);
@@ -340,13 +351,13 @@ if (isMain(import.meta.url)) {
       console.log('Backup created successfully');
       
       // Process files
-      const converter = new LinksToFootnotes(srcDirectory, createBackup, preserveInternalLinks);
+      const converter = new LinksToFootnotes(srcDirectory, createBackup, preserveInternalLinks, linkFootnoteUrls);
       await converter.processAllFiles();
       
       console.log(`\nDone! Original files backed up to ${backupDir}`);
     } else {
       // Process files
-      const converter = new LinksToFootnotes(srcDirectory, createBackup, preserveInternalLinks);
+      const converter = new LinksToFootnotes(srcDirectory, createBackup, preserveInternalLinks, linkFootnoteUrls);
       await converter.processAllFiles();
       
       console.log('\nDone! No backup created (--no-backup specified)');
