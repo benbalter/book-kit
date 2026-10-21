@@ -221,3 +221,46 @@ describe.skipIf(!hasFontTools)('book-kit fonts (needs fontTools: pip install -r 
     });
   });
 });
+
+// Runs whether or not fontTools is installed: a book with its own fonts must
+// not need the packages that only building them uses.
+describe('fonts without fontTools or brotli', () => {
+  it("still leaves the book's own fonts directory alone", () => {
+    const dir = mkdtempSync(join(tmpdir(), 'book-kit-fonts-noimport-'));
+    try {
+      const blocked = join(dir, 'blocked');
+      mkdirSync(blocked);
+      for (const name of ['brotli', 'fontTools']) {
+        writeFileSync(join(blocked, `${name}.py`), `raise ImportError("blocked", name="${name}")\n`);
+      }
+      mkdirSync(join(dir, 'fonts'));
+      writeFileSync(join(dir, 'fonts', 'Mine.woff2'), 'mine');
+      const r = spawnSync('python3', [SCRIPT, '--link', 'fonts'], {
+        cwd: dir,
+        encoding: 'utf8',
+        env: { ...process.env, PYTHONPATH: blocked, BOOK_KIT_CACHE: join(dir, 'cache') },
+      });
+      expect(r.stderr).not.toMatch(/is required/);
+      expect(r.status).toBe(0);
+      expect(readFileSync(join(dir, 'fonts', 'Mine.woff2'), 'utf8')).toBe('mine');
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  it('names the missing package when it has to build', () => {
+    const dir = mkdtempSync(join(tmpdir(), 'book-kit-fonts-noimport-'));
+    try {
+      writeFileSync(join(dir, 'brotli.py'), 'raise ImportError("blocked", name="brotli")\n');
+      const r = spawnSync('python3', [SCRIPT], {
+        cwd: dir,
+        encoding: 'utf8',
+        env: { ...process.env, PYTHONPATH: dir, BOOK_KIT_CACHE: join(dir, 'cache') },
+      });
+      expect(r.status).toBe(1);
+      expect(r.stderr).toMatch(/brotli is required/);
+    } finally {
+      rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
