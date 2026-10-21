@@ -39,7 +39,7 @@ If the book's `CLAUDE.md` says nothing about voice, ask the author for a style g
 
 - Chapters live in `src/` (`book-kit config paths.src`), listed in reading order in `index.yml`. Add a new chapter to `index.yml` in the same change, or the build won't include it; don't list a file that doesn't exist yet, or the build breaks.
 - Use lowercase, hyphenated filenames that match the chapter title.
-- Each chapter opens with an H2 title. Use H3 and H4 below that, and never skip a level.
+- Each chapter opens with an H2 title (H1 is for part or section openers, if the book has them). Use H3 and H4 below that, and never skip a level.
 - If the book generates takeaways chapters (`book-kit conventions` says so), run `just key-takeaways` after changing what they collect; never edit the generated files by hand.
 
 ## Markdown

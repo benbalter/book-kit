@@ -46,7 +46,7 @@ These aren't style choices:
 
 - Subject-verb and pronoun-antecedent agreement (singular *they* is fine)
 - Comma splices, run-ons over about 35 words that lose the reader, dangling and misplaced modifiers ("only" next to what it modifies)
-- Tense consistency within a passage: present for advice, past for anecdotes
+- Tense consistency within a passage (in nonfiction, usually present for advice and past for anecdotes)
 - Parallel structure in lists and series
 - Consistent punctuation: whatever the book's conventions set for the serial comma, quotation marks, and dashes, applied the same way everywhere
 
@@ -63,12 +63,12 @@ Tools miss these. Read for them:
 
 - **Ambiguous pronouns:** "this," "it," "they" with an unclear antecedent
 - **Terminology drift:** the same concept should use the same term throughout the book
-- **Cross-chapter repetition:** essays collected into a book repeat themselves; flag duplicate arguments and anecdotes for consolidation, especially when the chapters began as standalone posts
+- **Cross-chapter repetition:** flag duplicate arguments and anecdotes for consolidation; chapters that began as standalone essays or posts repeat themselves most
 - **Contradictions** between chapters, or tensions that need an explicit reconciliation
 - **Unsupported claims:** figures and sweeping assertions need a source, reasoning, or a hedge
 - **Transitions:** organic, picking up a word or idea from the previous paragraph, not "Furthermore" or "In the next chapter"
 - **Pacing:** mix short and long paragraphs; walls of same-length paragraphs read as machine-made
-- **Leftovers from another medium:** "in this post," "comments below," "last week I wrote," dated "recently," and links to the author's blog for material that is now a chapter (link the chapter's anchor instead)
+- **Leftovers from another medium:** if chapters began as posts, talks, or newsletters, catch "in this post," "comments below," "last week I wrote," dated "recently," and links to the original for material that is now a chapter (link the chapter's anchor instead)
 
 ## Voice
 
@@ -81,8 +81,8 @@ Edit toward the voice the book's style guide describes, never toward a generic h
 
 ## Inclusive and accessible language
 
-- Flag culture-specific idioms and sports metaphors that won't travel to a global audience
-- Flag jargon a newcomer to the field wouldn't know, and acronyms not expanded on first use in book order
+- Flag jargon the book's audience wouldn't know, and, if the book's conventions require it, acronyms not expanded on first use in book order
+- If the book writes for a global audience, flag culture-specific idioms and sports metaphors that won't travel
 - Headings for structure, not bold text; unambiguous dates, with time zones where they matter
 - Inclusive terms: "allowlist," not "whitelist"; "placeholder," not "dummy"
 
@@ -100,7 +100,7 @@ Edit toward the voice the book's style guide describes, never toward a generic h
 - [ ] `just lint` passes; `just prose` findings reviewed
 - [ ] No `TODO:` markers
 - [ ] Any required opening callout (`book-kit conventions`) is present, correctly fenced, and states the argument
-- [ ] Acronyms expanded on first use, in book order, in the book's style
+- [ ] Acronyms follow the book's conventions (first-use expansion, small caps) if it sets any
 - [ ] Footnotes resolve, with chapter-specific IDs
 - [ ] Cross-references resolve to anchors in this book
 - [ ] Heading levels don't skip
