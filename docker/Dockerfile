@@ -7,7 +7,7 @@
 #
 # Versions come from toolchain.json (tests/toolchain.test.js keeps the ARGs and
 # requirements.txt in sync with it).
-FROM ubuntu:24.04
+FROM ubuntu:26.04
 
 ARG PANDOC_VERSION=3.12.1
 ARG NODE_MAJOR=24
