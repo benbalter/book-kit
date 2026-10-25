@@ -87,6 +87,12 @@ print:
   trim: [6, 9]              # inches; must match the @page size in the CSS (`just check` verifies the PDF)
   page_count: null          # set to lock the PDF page count in CI (null = no lock)
   pdfx_title: ""            # PDF/X-1a info-dictionary title; defaults to metadata.title
+  paper: white              # KDP paper for `book-kit spine`: white, cream, standard-color, premium-color
+  # Paper thickness in inches per page for printers beyond KDP, for `book-kit
+  # spine`. Printers' papers differ, so take the figure from that printer's own
+  # cover template, e.g. { ingramspark: 0.002 }. An entry named kdp replaces
+  # KDP's published figure.
+  caliper: {}
 
 # Format checks (`just check`).
 checks:

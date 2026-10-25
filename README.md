@@ -221,6 +221,7 @@ Check changes with `claude plugin validate ./claude-plugin` and `claude plugin v
 - `book-kit conventions` prints the book's writing conventions (callouts, structure, checks, preset house style).
 - `book-kit audit-chapter-lengths` flags chapters much longer or shorter than the rest.
 - `book-kit parity BEFORE_DIST AFTER_DIST` compares two builds (see [Build parity](#build-parity)).
+- `book-kit spine` prints the cover's spine width, full wrap size, and 300 dpi pixel size for each printer, from `print.trim` and `print.page_count` (or `--pages`). KDP's paper figures are built in (`print.paper`); add other printers' paper thickness under `print.caliper`, taken from their cover templates, since each printer's paper differs and a wrap cut for one is wrong for another.
 
 ## Upgrading
 
