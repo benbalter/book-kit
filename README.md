@@ -143,7 +143,7 @@ For one-off pandoc options on the `epub`, `kindle`, and `html` builds, set `BOOK
 ```yaml
 jobs:
   build:
-    uses: benbalter/book-kit/.github/workflows/build.yml@v0.6
+    uses: benbalter/book-kit/.github/workflows/build.yml@v0.7
     permissions:
       contents: read
 ```
@@ -160,7 +160,7 @@ on:
     paths: [package.json, package-lock.json, justfile, book.config.yml]
 jobs:
   parity:
-    uses: benbalter/book-kit/.github/workflows/parity.yml@v0.6
+    uses: benbalter/book-kit/.github/workflows/parity.yml@v0.7
     permissions:
       contents: read
       packages: read

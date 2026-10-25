@@ -1,6 +1,6 @@
 {
   "name": "book-kit",
-  "version": "0.6.0",
+  "version": "0.7.0",
   "description": "Build and quality tooling for Markdown books: EPUB 3, Kindle, print-ready PDF and PDF/X-1a, HTML, and DOCX from one source, via pandoc, WeasyPrint, and Tailwind CSS.",
   "license": "MIT",
   "type": "module",
