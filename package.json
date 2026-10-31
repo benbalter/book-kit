@@ -59,7 +59,7 @@
     "@textlint-rule/textlint-rule-no-unmatched-pair": "2.0.4",
     "cssnano": "^9.1.0",
     "js-yaml": "^5.4.1",
-    "markdownlint-cli2": "0.23.3",
+    "markdownlint-cli2": "0.24.0",
     "postcss": "^8.5.26",
     "postcss-preset-env": "11.6.1",
     "sharp": "^0.35.5",
