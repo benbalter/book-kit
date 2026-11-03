@@ -10,5 +10,5 @@ weasyprint==70.0
 pikepdf==10.10.0
 Pillow==12.3.0
 python-docx==1.2.0
-fonttools==4.67.0
+fonttools==4.68.0
 brotli==1.2.0
