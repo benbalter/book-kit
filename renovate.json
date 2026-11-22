@@ -1,4 +1,23 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["local>benbalter/renovate-config"]
+  "extends": ["local>benbalter/renovate-config"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "toolchain.json is the source of truth for the Node version; .tool-versions restates it and tests/toolchain.test.js fails if they differ. Tracking it here puts both files in the same PR.",
+      "managerFilePatterns": ["/^toolchain\\.json$/"],
+      "matchStrings": ["\"node\": \"(?<currentValue>[^\"]+)\""],
+      "depNameTemplate": "node",
+      "datasourceTemplate": "node-version"
+    },
+    {
+      "customType": "regex",
+      "description": "The same for the Python packages, which requirements.txt restates.",
+      "managerFilePatterns": ["/^toolchain\\.json$/"],
+      "matchStringsStrategy": "recursive",
+      "matchStrings": ["\"python\": \\{[^}]*\\}", "\"(?<depName>[A-Za-z0-9_.-]+)\": \"(?<currentValue>[^\"]+)\""],
+      "datasourceTemplate": "pypi",
+      "versioningTemplate": "pep440"
+    }
+  ]
 }
