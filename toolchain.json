@@ -1,7 +1,7 @@
 {
   "$comment": "Single source of truth for tool versions. pandoc and WeasyPrint drive print pagination: bumping either can reflow a locked page count (print.page_count), so bump deliberately (the same goes for the upstream font releases in `fonts`) and re-run every book's page-count check. tests/toolchain.test.js keeps requirements.txt, the Dockerfile, and the actions in sync with this file.",
   "pandoc": "3.12.1",
-  "node": "24.21.0",
+  "node": "24.22.3",
   "just": "1.58.0",
   "vale": "3.15.1",
   "java": "21",
